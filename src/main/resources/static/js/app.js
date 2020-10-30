@@ -13,8 +13,9 @@ $(document).ready(
                             + msg.uri
                             + "'>"
                             + msg.uri
-                            + "</a></div>",
-                            "<img src=" + msg.qr_code + "/>");
+                            + "</a></div>"
+                            + "<img src=data:image/jpg;base64," + msg.qr_code +" />"
+                            );
                     },
                     error: function () {
                         $("#result").html(
