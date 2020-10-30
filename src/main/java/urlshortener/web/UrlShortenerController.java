@@ -28,21 +28,12 @@ import java.nio.file.Path;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
+import java.io.ByteArrayOutputStream;
 
 
 
 @RestController
 public class UrlShortenerController {
-
-  public class SU_composed  extends ShortURL{
-    public ShortURL su;
-    public BufferedImage qr;
-
-    public SU_composed(ShortURL su_, BufferedImage qr_){
-      su = su_;
-      qr = qr_;
-    }
-  };
 
   private final ShortURLService shortUrlService;
 
@@ -52,13 +43,15 @@ public class UrlShortenerController {
   private static final String QR_CODE_IMAGE_PATH = "./MyQRCode.png";
 
   //Function to generate Qr Codes given a string 
-  private static void generateQRCodeImage(String text, int width, int height, String filePath)
+  private static void generateQRCodeImage(ShortURL su, int width, int height, String filePath)
             throws WriterException, IOException {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, width, height);
-
-        Path path = FileSystems.getDefault().getPath(filePath);
-        MatrixToImageWriter.writeToPath(bitMatrix, "PNG", path);
+        BitMatrix bitMatrix = qrCodeWriter.encode(su.getUri().toString(), BarcodeFormat.QR_CODE, width, height);
+        BufferedImage new_qr = MatrixToImageWriter.toBufferedImage(bitMatrix);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ImageIO.write(new_qr,"jpg",bos);
+        byte[] qr = bos.toByteArray();
+        su.set_qr(qr);
     }
 
   public UrlShortenerController(ShortURLService shortUrlService, ClickService clickService) {
@@ -91,22 +84,14 @@ public class UrlShortenerController {
       h.setLocation(su.getUri());
       
       try {
-        generateQRCodeImage(su.getUri().toString(),250,250,QR_CODE_IMAGE_PATH);
+        generateQRCodeImage(su,250,250,QR_CODE_IMAGE_PATH);
       } catch (WriterException e) {
           System.out.println("Could not generate QR Code, WriterException :: " + e.getMessage());
       } catch (IOException e) {
         System.out.println("Could not generate QR Code, IOException :: " + e.getMessage());
       }
 
-      BufferedImage qr_new = null;
-      try {
-          qr_new = ImageIO.read(new File(QR_CODE_IMAGE_PATH));
-      } catch (IOException e) {
-      }
-
-      SU_composed respuesta = new SU_composed(su,qr_new);
-
-      return new ResponseEntity<>(respuesta, h, HttpStatus.CREATED);
+      return new ResponseEntity<>(su, h, HttpStatus.CREATED);
     } else {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }

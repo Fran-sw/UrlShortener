@@ -10,10 +10,11 @@ $(document).ready(
                     success: function (msg) {
                         $("#result").html(
                             "<div class='alert alert-success lead'><a target='_blank' href='"
-                            + msg.us.uri
+                            + msg.uri
                             + "'>"
-                            + msg.us.uri
-                            + "</a></div>");
+                            + msg.uri
+                            + "</a></div>",
+                            "<img src=" + msg.qr_code + "/>");
                     },
                     error: function () {
                         $("#result").html(
