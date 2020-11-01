@@ -16,6 +16,9 @@ public class ShortURL {
   private String ip;
   private String country;
 
+  private String qr;
+
+
   public ShortURL(String hash, String target, URI uri, String sponsor,
                   Date created, String owner, Integer mode, Boolean safe, String ip,
                   String country) {
@@ -72,6 +75,14 @@ public class ShortURL {
 
   public String getCountry() {
     return country;
+  }
+
+  public String getQr(){
+    return qr;
+  }
+
+  public void set_qr (String new_qr) {
+    this.qr = new_qr;
   }
 
 }

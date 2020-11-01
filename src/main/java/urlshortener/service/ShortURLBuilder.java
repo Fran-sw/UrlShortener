@@ -11,6 +11,9 @@ import java.util.function.Function;
 import org.springframework.http.HttpStatus;
 import urlshortener.domain.ShortURL;
 
+import java.awt.image.BufferedImage;
+
+
 public class ShortURLBuilder {
 
   private String hash;
