@@ -16,7 +16,7 @@ public class ShortURL {
   private String ip;
   private String country;
 
-  private byte[] qr_code;
+  private String qr;
 
 
   public ShortURL(String hash, String target, URI uri, String sponsor,
@@ -77,8 +77,12 @@ public class ShortURL {
     return country;
   }
 
-  public void set_qr (byte[] new_qr) {
-    this.qr_code = new_qr;
+  public String getQr(){
+    return qr;
+  }
+
+  public void set_qr (String new_qr) {
+    this.qr = new_qr;
   }
 
 }

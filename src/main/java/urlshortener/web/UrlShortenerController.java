@@ -30,7 +30,7 @@ import java.io.File;
 import javax.imageio.ImageIO;
 import java.io.ByteArrayOutputStream;
 
-
+import java.util.Base64;
 
 @RestController
 public class UrlShortenerController {
@@ -40,18 +40,18 @@ public class UrlShortenerController {
   private final ClickService clickService;
 
 
-  private static final String QR_CODE_IMAGE_PATH = "./MyQRCode.png";
-
   //Function to generate Qr Codes given a string 
-  private static void generateQRCodeImage(ShortURL su, int width, int height, String filePath)
+  private static String generateQRCodeImage(String uri,int width, int height)
             throws WriterException, IOException {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        BitMatrix bitMatrix = qrCodeWriter.encode(su.getUri().toString(), BarcodeFormat.QR_CODE, width, height);
+        BitMatrix bitMatrix = qrCodeWriter.encode(uri, BarcodeFormat.QR_CODE, width, height);
         BufferedImage new_qr = MatrixToImageWriter.toBufferedImage(bitMatrix);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ImageIO.write(new_qr,"jpg",bos);
-        byte[] qr = bos.toByteArray();
-        su.set_qr(qr);
+        ImageIO.write(new_qr,"png",bos);
+        byte[] qr_b = bos.toByteArray();
+        qr_b = Base64.getEncoder().encode(qr_b);
+        String qr = new String(qr_b);
+        return qr;
     }
 
   public UrlShortenerController(ShortURLService shortUrlService, ClickService clickService) {
@@ -84,7 +84,8 @@ public class UrlShortenerController {
       h.setLocation(su.getUri());
       
       try {
-        generateQRCodeImage(su,250,250,QR_CODE_IMAGE_PATH);
+        String qr = generateQRCodeImage(su.getUri().toString(),250,250);
+        su.set_qr(qr);
       } catch (WriterException e) {
           System.out.println("Could not generate QR Code, WriterException :: " + e.getMessage());
       } catch (IOException e) {
