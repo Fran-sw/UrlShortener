@@ -3,6 +3,10 @@ $(document).ready(
         $("#shortener").submit(
             function (event) {
                 event.preventDefault();
+                $("#result").html(
+                    "<div class='alert alert-danger lead' style='display: none'></div>");
+                $("#result2").html(
+                    "<div class='alert alert-danger lead' style='display: none'></div>");
                 $.ajax({
                     type: "POST",
                     url: "/link",
@@ -30,20 +34,24 @@ $(document).ready(
                     }
                 });
             });
-        $("#shortener").submit(
+        $("#CSVshortener").submit(
             function (event) {
                 event.preventDefault();
+                $("#result").html(
+                    "<div class='alert alert-danger lead' style='display: none'></div>");
+                $("#resul2").html(
+                    "<div class='alert alert-danger lead' style='display: none'></div>");
                 $.ajax({
                     type: "POST",
-                    url: "/link",
+                    url: "/csv",
                     data: $(this).serialize(),
                     success: function (msg) {
                         console.log(msg)
-                        $("#result").html(
-                            "<div class='alert alert-success lead'>TEST</div>");
+                        $("#result2").html(
+                            "<div class='alert alert-success lead'>"+msg+"</div>");
                     },
                     error: function () {
-                        $("#result").html(
+                        $("#result2").html(
                             "<div class='alert alert-danger lead'>ERROR2</div>");
                     }
                 });

@@ -33,7 +33,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;  
+import java.io.FileWriter;
+import java.io.StringWriter;  
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -48,51 +49,42 @@ public class UrlShortenerController {
 
 //Function to shorten al urls in a csv file
 @RequestMapping(value = "/csv", method = RequestMethod.POST)
-private static void generateShortenedCSV(@RequestParam("csv") File csv,@RequestParam(value = "sponsor", required = false)String sponsor,HttpServletRequest request)
+private String generateShortenedCSV(@RequestParam("file") File csv, @RequestParam(value = "sponsor", required = false) String sponsor,HttpServletRequest request)
       throws FileNotFoundException, IOException {
   String name = csv.getName();
   String[] check = name.split(".");
-  if (csv.isFile() && (check[check.length-1]=="csv")) {
+  if ((check[check.length-1]=="csv")) { //csv.isFile() && 
 
     BufferedReader csvReader = new BufferedReader(new FileReader(csv));
 
-    FileWriter csvWriter = new FileWriter("new.csv");
+    FileWriter csvWriter = new FileWriter(csv);
     String row;
     while ((row = csvReader.readLine()) != null) {
       String[] data = row.split(",");
       String[] shortened = data;
       for (int i=0;i<data.length;i++){
-        //ShortURL short= shortenerCSV(data[i], sponsor,request);
-        //shortened[i]=short.uri;
+        shortened[i] = shortenerCSV(data[i]);
       }
-      if(shortened.length>0){
-        csvWriter.append(String.join(",", shortened));
-      }
+      csvWriter.append(String.join(",",shortened));
       csvWriter.append("\n");
     }
     csvReader.close();
     csvWriter.flush();
-    csvWriter.close();
 
-    //print in screen the option to download new csv
-  }else{
-    //please introduce a valid csv file
+    return csvWriter.toString();
+  } else {
+    return "error";
   }
 }
-/*public ShortURL shortenerCSV(String url,
-                                          String sponsor,
-                                          HttpServletRequest request) {
+public String shortenerCSV(String url) {
     UrlValidator urlValidator = new UrlValidator(new String[] {"http","https"});
     if (urlValidator.isValid(url)) {
-      ShortURL su = shortUrlService.save(url, sponsor, request.getRemoteAddr());
-      HttpHeaders h = new HttpHeaders();
-      h.setLocation(su.getUri());
-
-      return su;
+      ShortURL su = shortUrlService.save(url, "0", "0");
+      return su.getUri().toString();
     } else {
-      return su;
+      return "Couldn't convert the url \" "+url+" \"";
     }
-  }*/
+  }
 
   //Function to generate Qr Codes given a string 
   private static String generateQRCodeImage(String uri,int width, int height)
