@@ -39,34 +39,6 @@ public class UrlShortenerController {
 
   private final ClickService clickService;
 
-  //Function to shorten al urls in a csv file
-  private static File generateShortenedCSV(File csv)
-    String[] check = csv.split(".");
-    int len = check.length();
-    if (csv.isFile() && (check[len-1]=="csv")) {
-
-      BufferedReader csvReader = new BufferedReader(new FileReader(csv));
-
-      FileWriter csvWriter = new FileWriter("new.csv");
-
-      while ((row = csvReader.readLine()) != null) {
-        String[] data = row.split(",");
-        String[] shortened;
-        for (int i=0;i<data.length();i++){
-          // shorten data[i] and store in shortened[i], se puede marcar si una url falla
-        }
-        csvWriter.append(String.join(",", shortened));
-        csvWriter.append("\n");
-      }
-      csvReader.close();
-      csvWriter.flush();
-      csvWriter.close();
-
-      //print in screen the option to download new csv
-    }else{
-      //please introduce a valid csv file
-    }
-  }
 
   //Function to generate Qr Codes given a string 
   private static String generateQRCodeImage(String uri,int width, int height)
