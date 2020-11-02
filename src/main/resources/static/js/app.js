@@ -30,4 +30,22 @@ $(document).ready(
                     }
                 });
             });
+        $("#shortener").submit(
+            function (event) {
+                event.preventDefault();
+                $.ajax({
+                    type: "POST",
+                    url: "/link",
+                    data: $(this).serialize(),
+                    success: function (msg) {
+                        console.log(msg)
+                        $("#result").html(
+                            "<div class='alert alert-success lead'>TEST</div>");
+                    },
+                    error: function () {
+                        $("#result").html(
+                            "<div class='alert alert-danger lead'>ERROR2</div>");
+                    }
+                });
+            });
     });
