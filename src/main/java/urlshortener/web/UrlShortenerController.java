@@ -86,6 +86,7 @@ public class UrlShortenerController {
       try {
         String qr = generateQRCodeImage(su.getUri().toString(),250,250);
         su.set_qr(qr);
+        shortUrlService.update(su);
       } catch (WriterException e) {
           System.out.println("Could not generate QR Code, WriterException :: " + e.getMessage());
       } catch (IOException e) {

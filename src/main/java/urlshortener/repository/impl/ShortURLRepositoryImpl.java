@@ -79,10 +79,10 @@ public class ShortURLRepositoryImpl implements ShortURLRepository {
   public void update(ShortURL su) {
     try {
       jdbc.update(
-          "update shorturl set target=?, sponsor=?, created=?, owner=?, mode=?, safe=?, ip=?, country=? where hash=?",
+          "update shorturl set target=?, sponsor=?, created=?, owner=?, mode=?, safe=?, ip=?, country=?,qr=? where hash=?",
           su.getTarget(), su.getSponsor(), su.getCreated(),
           su.getOwner(), su.getMode(), su.getSafe(), su.getIP(),
-          su.getCountry(), su.getHash());
+          su.getCountry(),su.getQr(), su.getHash());
     } catch (Exception e) {
       log.debug("When update for hash {}", su.getHash(), e);
     }

@@ -37,4 +37,8 @@ public class ShortURLService {
         .build();
     return shortURLRepository.save(su);
   }
+
+  public void update(ShortURL su){
+    shortURLRepository.update(su);
+  }
 }
