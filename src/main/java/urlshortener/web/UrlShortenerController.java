@@ -15,6 +15,10 @@ import urlshortener.domain.ShortURL;
 import urlshortener.service.ClickService;
 import urlshortener.service.ShortURLService;
 
+//import org.springframework.web.multipart;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartException;
+
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -49,9 +53,9 @@ public class UrlShortenerController {
 
 //Function to shorten al urls in a csv file
 @RequestMapping(value = "/csv", method = RequestMethod.POST)
-private String generateShortenedCSV(@RequestParam("file") File csv, @RequestParam(value = "sponsor", required = false) String sponsor,HttpServletRequest request)
-      throws FileNotFoundException, IOException {
-  String name = csv.getName();
+public ResponseEntity<String> generateShortenedCSV(@RequestParam("csv") MultipartFile csv, @RequestParam(value = "sponsor", required = false) String sponsor,HttpServletRequest request)
+      throws MultipartException, FileNotFoundException, IOException {
+  /*String name = csv.getName();
   String[] check = name.split(".");
   if ((check[check.length-1]=="csv")) { //csv.isFile() && 
 
@@ -71,10 +75,12 @@ private String generateShortenedCSV(@RequestParam("file") File csv, @RequestPara
     csvReader.close();
     csvWriter.flush();
 
-    return csvWriter.toString();
+    return csvWriter.toString();*/
+    String answer="good";
+    return new ResponseEntity<>(answer,HttpStatus.CREATED);/*
   } else {
     return "error";
-  }
+  }*/
 }
 public String shortenerCSV(String url) {
     UrlValidator urlValidator = new UrlValidator(new String[] {"http","https"});
