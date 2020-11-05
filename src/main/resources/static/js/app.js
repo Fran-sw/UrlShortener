@@ -49,14 +49,20 @@ $(document).ready(
                     "<div class='alert alert-danger lead' style='display: none'></div>");
                 $("#resul2").html(
                     "<div class='alert alert-danger lead' style='display: none'></div>");
+                var form = $('#CSVshortener')[0];
+                var data = new FormData(form);
                 $.ajax({
                     type: "POST",
                     url: "/csv",
-                    data: $(this).serialize(),
+                    enctype: 'multipart/form-data',
+                    processData: false,
+                    //contentType: multipart/form-data, charset=utf-8, boundary="---54143246---",
+                    contentType: false,
+                    data: data,
                     success: function (msg) {
                         console.log(msg)
                         $("#result2").html(
-                            "<div class='alert alert-success lead'>"+msg+"</div>");
+                            "<div class='alert alert-success lead'>"+"Te"+"</div>");
                     },
                     error: function () {
                         $("#result2").html(
