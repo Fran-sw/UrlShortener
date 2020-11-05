@@ -19,7 +19,15 @@ $(document).ready(
                             + "'>"
                             + msg.uri
                             + "</a></div>"
+
                             + "<img src=\"data:image/png;base64, " + msg.qr +"\" />"
+
+                            + "<div class='alert alert-success lead'><a target='_blank' href='"
+                            + "data:image/png;base64, " + msg.qr
+                            + "'>"
+                            + msg.uri+ ".png"
+                            + "</a></div>"
+
                             );
                         
                         // QR print
