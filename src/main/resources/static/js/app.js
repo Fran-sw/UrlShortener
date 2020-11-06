@@ -62,11 +62,11 @@ $(document).ready(
                     success: function (msg) {
                         console.log(msg)
                         $("#result2").html(
-                            "<div class='alert alert-success lead'>"+"Te"+"</div>");
+                            "<div class='alert alert-success lead'>"+msg+"</div>");
                     },
                     error: function () {
                         $("#result2").html(
-                            "<div class='alert alert-danger lead'>ERROR2</div>");
+                            "<div class='alert alert-danger lead'>File not found</div>");
                     }
                 });
             });
