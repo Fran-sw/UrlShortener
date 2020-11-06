@@ -19,22 +19,35 @@ $(document).ready(
                             + "'>"
                             + msg.uri
                             + "</a></div>"
-
-                            + "<img src=\"data:image/png;base64, " + msg.qr +"\" />"
-
+                            );
+                    },
+                    error: function () {
+                        $("#result").html(
+                            "<div class='alert alert-danger lead'>ERROR</div>");
+                    }
+                });
+            });
+        $("#shortenerQR").submit(
+            function (event) {
+                event.preventDefault();
+                $("#result").html(
+                    "<div class='alert alert-danger lead' style='display: none'></div>");
+                $("#result2").html(
+                    "<div class='alert alert-danger lead' style='display: none'></div>");
+                $.ajax({
+                    type: "POST",
+                    url: "/linkQR",
+                    data: $(this).serialize(),
+                    success: function (msg) {
+                        console.log(msg)
+                        $("#result").html(
+                            "<img src=\"data:image/png;base64, " + msg.qr +"\" />"
                             + "<div class='alert alert-success lead'><a target='_blank' href='"
                             + "data:image/png;base64, " + msg.qr
                             + "'>"
                             + msg.uri+ ".png"
                             + "</a></div>"
-
                             );
-                        
-                        // QR print
-                        //var b64Response = btoa(msg.qr_code);
-                        //var outputImg = document.createElement('img');
-                        //outputImg.src = 'data:image/jpgbase64,' + b64Response;
-                        //document.body.appendChild(outputImg);
                     },
                     error: function () {
                         $("#result").html(
