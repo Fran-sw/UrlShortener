@@ -170,9 +170,30 @@ public String shortenerCSV(String url) {
       HttpHeaders h = new HttpHeaders();
       h.setLocation(su.getUri());
       
+      return new ResponseEntity<>(su, h, HttpStatus.CREATED);
+    } else {
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+  }
+
+
+  //RESPONSE MAPPING FOR QR CODE
+  @RequestMapping(value = "/linkQR", method = RequestMethod.POST)
+  public ResponseEntity<ShortURL> shortenerQR(@RequestParam("url") String url,
+                                            @RequestParam(value = "sponsor", required = false)
+                                            String sponsor,
+                                            HttpServletRequest request) {
+    UrlValidator urlValidator = new UrlValidator(new String[] {"http",
+        "https"});
+    if (urlValidator.isValid(url)) {
+      ShortURL su = shortUrlService.save(url, sponsor, request.getRemoteAddr());
+      HttpHeaders h = new HttpHeaders();
+      h.setLocation(su.getUri());
+      
       try {
         String qr = generateQRCodeImage(su.getUri().toString(),250,250);
         su.set_qr(qr);
+        shortUrlService.update(su);
       } catch (WriterException e) {
           System.out.println("Could not generate QR Code, WriterException :: " + e.getMessage());
       } catch (IOException e) {
@@ -184,6 +205,7 @@ public String shortenerCSV(String url) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
   }
+
 
   private String extractIP(HttpServletRequest request) {
     return request.getRemoteAddr();
