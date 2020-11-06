@@ -40,7 +40,7 @@ $(document).ready(
                     data: $(this).serialize(),
                     success: function (msg) {
                         console.log(msg)
-                        $("#result").html(
+                        $("#resultQr").html(
                             "<img src=\"data:image/png;base64, " + msg.qr +"\" />"
                             + "<div class='alert alert-success lead'><a target='_blank' href='"
                             + "data:image/png;base64, " + msg.qr
