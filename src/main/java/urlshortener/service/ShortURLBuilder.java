@@ -26,6 +26,7 @@ public class ShortURLBuilder {
   private Boolean safe;
   private String ip;
   private String country;
+  private String qr;
 
   static ShortURLBuilder newInstance() {
     return new ShortURLBuilder();
@@ -42,7 +43,8 @@ public class ShortURLBuilder {
         mode,
         safe,
         ip,
-        country
+        country,
+        qr
     );
   }
 
@@ -85,6 +87,11 @@ public class ShortURLBuilder {
 
   ShortURLBuilder unknownCountry() {
     this.country = null;
+    return this;
+  }
+
+  ShortURLBuilder qr() {
+    this.qr = null;
     return this;
   }
 

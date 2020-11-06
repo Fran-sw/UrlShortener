@@ -15,6 +15,10 @@ import urlshortener.domain.ShortURL;
 import urlshortener.service.ClickService;
 import urlshortener.service.ShortURLService;
 
+//import org.springframework.web.multipart;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartException;
+
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -30,6 +34,14 @@ import java.io.File;
 import javax.imageio.ImageIO;
 import java.io.ByteArrayOutputStream;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.StringWriter;  
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import java.util.Base64;
 
 @RestController
@@ -39,6 +51,46 @@ public class UrlShortenerController {
 
   private final ClickService clickService;
 
+//Function to shorten al urls in a csv file
+@RequestMapping(value = "/csv", method = RequestMethod.POST)
+public ResponseEntity<String> generateShortenedCSV(@RequestParam("csv") MultipartFile csv, @RequestParam(value = "sponsor", required = false) String sponsor,HttpServletRequest request)
+      throws MultipartException, FileNotFoundException, IOException {
+  /*String name = csv.getName();
+  String[] check = name.split(".");
+  if ((check[check.length-1]=="csv")) { //csv.isFile() && 
+
+    BufferedReader csvReader = new BufferedReader(new FileReader(csv));
+
+    FileWriter csvWriter = new FileWriter(csv);
+    String row;
+    while ((row = csvReader.readLine()) != null) {
+      String[] data = row.split(",");
+      String[] shortened = data;
+      for (int i=0;i<data.length;i++){
+        shortened[i] = shortenerCSV(data[i]);
+      }
+      csvWriter.append(String.join(",",shortened));
+      csvWriter.append("\n");
+    }
+    csvReader.close();
+    csvWriter.flush();
+
+    return csvWriter.toString();*/
+    String answer="good";
+    return new ResponseEntity<>(answer,HttpStatus.CREATED);/*
+  } else {
+    return "error";
+  }*/
+}
+public String shortenerCSV(String url) {
+    UrlValidator urlValidator = new UrlValidator(new String[] {"http","https"});
+    if (urlValidator.isValid(url)) {
+      ShortURL su = shortUrlService.save(url, "0", "0");
+      return su.getUri().toString();
+    } else {
+      return "Couldn't convert the url \" "+url+" \"";
+    }
+  }
 
   //Function to generate Qr Codes given a string 
   private static String generateQRCodeImage(String uri,int width, int height)
@@ -74,7 +126,27 @@ public class UrlShortenerController {
   @RequestMapping(value = "/link", method = RequestMethod.POST)
   public ResponseEntity<ShortURL> shortener(@RequestParam("url") String url,
                                             @RequestParam(value = "sponsor", required = false)
-                                                String sponsor,
+                                            String sponsor,
+                                            HttpServletRequest request) {
+    UrlValidator urlValidator = new UrlValidator(new String[] {"http",
+        "https"});
+    if (urlValidator.isValid(url)) {
+      ShortURL su = shortUrlService.save(url, sponsor, request.getRemoteAddr());
+      HttpHeaders h = new HttpHeaders();
+      h.setLocation(su.getUri());
+      
+      return new ResponseEntity<>(su, h, HttpStatus.CREATED);
+    } else {
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+  }
+
+
+  //RESPONSE MAPPING FOR QR CODE
+  @RequestMapping(value = "/linkQR", method = RequestMethod.POST)
+  public ResponseEntity<ShortURL> shortenerQR(@RequestParam("url") String url,
+                                            @RequestParam(value = "sponsor", required = false)
+                                            String sponsor,
                                             HttpServletRequest request) {
     UrlValidator urlValidator = new UrlValidator(new String[] {"http",
         "https"});
@@ -98,6 +170,7 @@ public class UrlShortenerController {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
   }
+
 
   private String extractIP(HttpServletRequest request) {
     return request.getRemoteAddr();

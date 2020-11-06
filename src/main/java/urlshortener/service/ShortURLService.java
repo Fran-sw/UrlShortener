@@ -34,6 +34,7 @@ public class ShortURLService {
         .treatAsSafe()
         .ip(ip)
         .unknownCountry()
+        .qr()
         .build();
     return shortURLRepository.save(su);
   }
