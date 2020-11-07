@@ -38,4 +38,8 @@ public class ShortURLService {
         .build();
     return shortURLRepository.save(su);
   }
+
+  public ShortURL mark(ShortURL url, boolean safeness){
+    return shortURLRepository.mark(url,safeness);
+  }
 }
