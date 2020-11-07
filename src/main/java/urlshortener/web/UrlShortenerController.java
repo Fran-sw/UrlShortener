@@ -114,7 +114,7 @@ public class UrlShortenerController {
       if(!check_Reachable(su.getUri().toString())){
         // SHORT URI NOT REACHABLE -> WE WILL NEED TO MARK IT -> INOMPLETE FOR THE 10 POINTS
         // shortUrlService.mark(su,false);
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(su, h, HttpStatus.CREATED);
       }
       else{
         //shortUrlService.mark(su,true);
