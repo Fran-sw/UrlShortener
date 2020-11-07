@@ -5,6 +5,8 @@ $(document).ready(
                 event.preventDefault();
                 $("#result").html(
                     "<div class='alert alert-danger lead' style='display: none'></div>");
+                $("#resultQr").html(
+                    "<div class='alert alert-danger lead' style='display: none'></div>");
                 $("#result2").html(
                     "<div class='alert alert-danger lead' style='display: none'></div>");
                 $.ajax({
@@ -32,6 +34,8 @@ $(document).ready(
                 event.preventDefault();
                 $("#result").html(
                     "<div class='alert alert-danger lead' style='display: none'></div>");
+                $("#resultQr").html(
+                    "<div class='alert alert-danger lead' style='display: none'></div>");
                 $("#result2").html(
                     "<div class='alert alert-danger lead' style='display: none'></div>");
                 $.ajax({
@@ -50,7 +54,7 @@ $(document).ready(
                             );
                     },
                     error: function () {
-                        $("#result").html(
+                        $("#resultQr").html(
                             "<div class='alert alert-danger lead'>ERROR</div>");
                     }
                 });
@@ -60,7 +64,9 @@ $(document).ready(
                 event.preventDefault();
                 $("#result").html(
                     "<div class='alert alert-danger lead' style='display: none'></div>");
-                $("#resul2").html(
+                $("#resultQr").html(
+                    "<div class='alert alert-danger lead' style='display: none'></div>");
+                $("#result2").html(
                     "<div class='alert alert-danger lead' style='display: none'></div>");
                 var form = $('#CSVshortener')[0];
                 var data = new FormData(form);
@@ -75,7 +81,15 @@ $(document).ready(
                     success: function (msg) {
                         console.log(msg)
                         $("#result2").html(
-                            "<div class='alert alert-success lead'>"+msg+"</div>");
+                            "<div class='alert alert-success lead'>"
+                            +
+                            "<a href='"
+                            +
+                            msg
+                            +
+                            "' type='text/csv' download='shortened'>Download File</a>"
+                            +
+                            "</div>");
                     },
                     error: function () {
                         $("#result2").html(

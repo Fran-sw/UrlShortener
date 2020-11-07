@@ -40,6 +40,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -68,33 +69,23 @@ public File convert(MultipartFile file) throws IOException {
 
 //Function to shorten al urls in a csv file
 @RequestMapping(value = "/csv", method = RequestMethod.POST)
-public ResponseEntity<String> generateShortenedCSV(@RequestParam("csv") MultipartFile csv, @RequestParam(value = "sponsor", required = false) String sponsor,HttpServletRequest request)
+public ResponseEntity<File> generateShortenedCSV(@RequestParam("csv") MultipartFile csv, @RequestParam(value = "sponsor", required = false) String sponsor,HttpServletRequest request)
   throws MultipartException, FileNotFoundException, IOException {
   if (csv.getOriginalFilename().length()>1) { //Hay fichero, sino es una petición vacía
-    //File file = new File("shortened.csv");
-    //file.createNewFile();
-    //csv.transferTo(file);
-    //String name = file.getName();
 
-    BufferedReader br;
-    List<String> result = new ArrayList<>();
-    String line;
+    File file = new File("shortened.csv");
+
     InputStream is = csv.getInputStream();
-    br = new BufferedReader(new InputStreamReader(is));
-    line = br.readLine();
-    /*while ((line = br.readLine()) != null) {
-      result.add(line);
-    }*/
+    BufferedReader br = new BufferedReader(new InputStreamReader(is));
+    BufferedWriter csvWriter = new BufferedWriter(new FileWriter(file));
+    
+    String line;
+    while ((line = br.readLine()) != null) {
+      String shortLine = shortenerCSV(line);
+      csvWriter.write(line+";"+shortLine+";exito;\n"); //Cambiar exito por el resultado real
+    }
 
-    //FileInputStream input = new FileInputStream(file);
-    //InputStreamReader  reader = new InputStreamReader(input);
-
-    //char[] array=new char[100];
-    //reader.read(array);
-    //String str = new String(array);
-
-    //BufferedReader csvReader = new BufferedReader(new FileReader(file));
-
+    //returnable=returnable+line+";"+shortLine+";exito;\n";
     //FileWriter csvWriter = new FileWriter(file);
     /*String row;
     while ((row = csvReader.readLine()) != null) {
@@ -107,14 +98,31 @@ public ResponseEntity<String> generateShortenedCSV(@RequestParam("csv") Multipar
       //csvWriter.append("\n");
     //}
     //csvReader.close();
-    //csvWriter.flush();
-    //return csvWriter.toString();
-    //reader.close();
-    return new ResponseEntity<>(line,HttpStatus.CREATED);
+    csvWriter.flush();
+    csvWriter.close();
+    return new ResponseEntity<>(file,HttpStatus.CREATED);
   } else {
     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
 }
+
+
+/*
+    //file.createNewFile();
+    //csv.transferTo(file);
+    //String name = file.getName();
+
+
+    //char[] array=new char[100];
+    //reader.read(array);
+    //String str = new String(array);
+
+    //BufferedReader csvReader = new BufferedReader(new FileReader(file));
+
+    
+    //return csvWriter.toString();
+    //reader.close();
+*/
 
 
 public String shortenerCSV(String url) {
