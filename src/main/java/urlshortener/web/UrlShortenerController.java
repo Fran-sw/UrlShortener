@@ -68,7 +68,7 @@ public class UrlShortenerController {
       HttpURLConnection huc = (HttpURLConnection) url.openConnection();
 
       int responseCode = huc.getResponseCode();
-      if(responseCode == HttpURLConnection.HTTP_OK){
+      if(responseCode == 200){
         return true;
       }
       else{
@@ -113,13 +113,12 @@ public class UrlShortenerController {
       h.setLocation(su.getUri());
       if(!check_Reachable(su.getUri().toString())){
         // SHORT URI NOT REACHABLE -> WE WILL NEED TO MARK IT -> INOMPLETE FOR THE 10 POINTS
-        // shortUrlService.mark(su,false);
-        return new ResponseEntity<>(su, h, HttpStatus.CREATED);
+        shortUrlService.mark(su,false);
       }
       else{
-        //shortUrlService.mark(su,true);
-        return new ResponseEntity<>(su, h, HttpStatus.CREATED);
+        shortUrlService.mark(su,true);
       }
+      return new ResponseEntity<>(su, h, HttpStatus.CREATED);
     } else {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
