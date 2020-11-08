@@ -64,6 +64,7 @@ public class UrlShortenerAgentsController {
     info_UserAgents.put("Firefox",0);
     info_UserAgents.put("IE",0);
     info_UserAgents.put("Win10",0);
+    info_UserAgents.put("Win7",0);
     info_UserAgents.put("Android",0);
     info_UserAgents.put("IOS",0);
   }
