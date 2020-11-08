@@ -33,14 +33,7 @@ import java.io.File;
 import javax.imageio.ImageIO;
 import java.io.ByteArrayOutputStream;
 
-import java.lang.Object;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -49,59 +42,39 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import java.util.Base64;
-import java.util.*;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 @RestController
-public class UrlShortenerController {
+public class UrlShortenerQRController {
 
   private final ShortURLService shortUrlService;
 
   private final ClickService clickService;
 
-  //Function to check if an url is reachable
-  private boolean check_Reachable(String short_uri){
-    try{
-      URL url = new URL(short_uri);
-      HttpURLConnection huc = (HttpURLConnection) url.openConnection();
-
-      int responseCode = huc.getResponseCode();
-      if(responseCode == 200){
-        return true;
-      }
-      else{
-        return false;
-      }
-    }
-    catch(IOException e) {return false;}
-  }
-
-  // Function to trat USER AGENT
-  //private void user_agents_treatment(HttpServletRequest request){
-    //UserAgent u_agent = UserAgent.parseUserAgentString(request.getHeader("User-Agent"));
-  //}
-
-  public UrlShortenerController(ShortURLService shortUrlService, ClickService clickService) {
+  public UrlShortenerQRController(ShortURLService shortUrlService, ClickService clickService) {
     this.shortUrlService = shortUrlService;
     this.clickService = clickService;
   }
 
-  @RequestMapping(value = "/{id:(?!link|index).*}", method = RequestMethod.GET)
-  public ResponseEntity<?> redirectTo(@PathVariable String id,
-                                      HttpServletRequest request) {
-    ShortURL l = shortUrlService.findByKey(id);
-    if (l != null) {
-      clickService.saveClick(id, extractIP(request));
-      return createSuccessfulRedirectToResponse(l);
-    } else {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+  //Function to generate Qr Codes given a string 
+  private static String generateQRCodeImage(String uri,int width, int height)
+            throws WriterException, IOException {
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(uri, BarcodeFormat.QR_CODE, width, height);
+        BufferedImage new_qr = MatrixToImageWriter.toBufferedImage(bitMatrix);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ImageIO.write(new_qr,"png",bos);
+        byte[] qr_b = bos.toByteArray();
+        qr_b = Base64.getEncoder().encode(qr_b);
+        String qr = new String(qr_b);
+        return qr;
     }
-  }
-
-  @RequestMapping(value = "/link", method = RequestMethod.POST)
-  public ResponseEntity<ShortURL> shortener(@RequestParam("url") String url,
+    
+  //RESPONSE MAPPING FOR QR CODE
+  @RequestMapping(value = "/linkQR", method = RequestMethod.POST)
+  public ResponseEntity<ShortURL> shortenerQR(@RequestParam("url") String url,
                                             @RequestParam(value = "sponsor", required = false)
                                             String sponsor,
                                             HttpServletRequest request) {
@@ -111,26 +84,20 @@ public class UrlShortenerController {
       ShortURL su = shortUrlService.save(url, sponsor, request.getRemoteAddr());
       HttpHeaders h = new HttpHeaders();
       h.setLocation(su.getUri());
-      if(!check_Reachable(su.getUri().toString())){
-        // SHORT URI NOT REACHABLE -> WE WILL NEED TO MARK IT -> INCOMPLETE FOR THE 10 POINTS
-        shortUrlService.mark(su,false);
+      
+      try {
+        String qr = generateQRCodeImage(su.getUri().toString(),250,250);
+        su.set_qr(qr);
+      } catch (WriterException e) {
+          System.out.println("Could not generate QR Code, WriterException :: " + e.getMessage());
+      } catch (IOException e) {
+        System.out.println("Could not generate QR Code, IOException :: " + e.getMessage());
       }
-      else{
-        shortUrlService.mark(su,true);
-      }
+
       return new ResponseEntity<>(su, h, HttpStatus.CREATED);
     } else {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
   }
 
-  private String extractIP(HttpServletRequest request) {
-    return request.getRemoteAddr();
-  }
-
-  private ResponseEntity<?> createSuccessfulRedirectToResponse(ShortURL l) {
-    HttpHeaders h = new HttpHeaders();
-    h.setLocation(URI.create(l.getTarget()));
-    return new ResponseEntity<>(h, HttpStatus.valueOf(l.getMode()));
-  }
 }

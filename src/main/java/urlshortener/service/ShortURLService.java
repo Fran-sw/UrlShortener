@@ -9,6 +9,9 @@ import urlshortener.domain.ShortURL;
 import urlshortener.repository.ShortURLRepository;
 import urlshortener.web.UrlShortenerController;
 
+import org.springframework.beans.DirectFieldAccessor;
+
+
 @Service
 public class ShortURLService {
 
@@ -39,7 +42,7 @@ public class ShortURLService {
     return shortURLRepository.save(su);
   }
 
-  public void update(ShortURL su){
-    shortURLRepository.update(su);
+  public ShortURL mark(ShortURL url, boolean safeness){
+    return shortURLRepository.mark(url,safeness);
   }
 }

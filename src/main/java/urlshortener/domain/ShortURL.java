@@ -82,8 +82,7 @@ public class ShortURL {
     return qr;
   }
 
-  public void set_qr (String new_qr) {
+  public void set_qr(String new_qr) {
     this.qr = new_qr;
   }
-
 }
