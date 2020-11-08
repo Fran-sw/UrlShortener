@@ -37,6 +37,8 @@ import com.blueconic.browscap.UserAgentParser;
 import com.blueconic.browscap.ParseException;
 import com.blueconic.browscap.UserAgentService;
 
+import java.util.*;
+
 @RestController
 public class UrlShortenerAgentsController {
 
@@ -45,6 +47,7 @@ public class UrlShortenerAgentsController {
   private final ClickService clickService;
 
   private UserAgentParser userAgentParser = null;
+  Map<String, Integer> info_UserAgents;
 
   public UrlShortenerAgentsController(ShortURLService shortUrlService, ClickService clickService) {
     this.shortUrlService = shortUrlService;
@@ -53,7 +56,16 @@ public class UrlShortenerAgentsController {
       this.userAgentParser = new UserAgentService().loadParser(); // handle IOException and ParseException
     }
     catch(IOException e){}
-    catch(ParseException e) {}
+    catch(ParseException e){}
+
+    this.info_UserAgents = new HashMap<String, Integer>();
+    //Complete with more tags
+    info_UserAgents.put("Chrome",0);
+    info_UserAgents.put("Firefox",0);
+    info_UserAgents.put("IE",0);
+    info_UserAgents.put("Win10",0);
+    info_UserAgents.put("Android",0);
+    info_UserAgents.put("IOS",0);
   }
 
  
@@ -64,7 +76,13 @@ public class UrlShortenerAgentsController {
     String os = capabilities.getPlatform();
 
     HttpHeaders h = new HttpHeaders();
-    String res = String.format("Browser: %s, OS: %s",browser,os);
+
+    int veces_B = info_UserAgents.get(browser);
+    int veces_SO = info_UserAgents.get(os);
+    info_UserAgents.put(browser,veces_B+1);
+    info_UserAgents.put(os,veces_SO+1);
+
+    String res = String.format("%s: %d \n%s: %d \n%s: %d \n%s: %d \n%s: %d \n%s: %d \n","Chrome",info_UserAgents.get("Chrome"),"Firefox",info_UserAgents.get("Firefox"),"IE",info_UserAgents.get("IE"),"Win10",info_UserAgents.get("Win10"),"Android",info_UserAgents.get("Android"),"IOS",info_UserAgents.get("IOS"));
     return new ResponseEntity<>(res, h, HttpStatus.OK);
   }
 }
