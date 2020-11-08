@@ -15,7 +15,6 @@ import urlshortener.domain.ShortURL;
 import urlshortener.service.ClickService;
 import urlshortener.service.ShortURLService;
 
-//import org.springframework.web.multipart;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartException;
 
@@ -34,7 +33,14 @@ import java.io.File;
 import javax.imageio.ImageIO;
 import java.io.ByteArrayOutputStream;
 
+import java.lang.Object;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -43,6 +49,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import java.util.Base64;
+import java.util.*;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -59,44 +66,52 @@ public class UrlShortenerCVSController {
     this.clickService = clickService;
   }
 
-  //Function to shorten al urls in a csv file
+//Function to shorten al urls in a csv file
 @RequestMapping(value = "/csv", method = RequestMethod.POST)
-public ResponseEntity<String> generateShortenedCSV(@RequestParam("csv") MultipartFile csv, @RequestParam(value = "sponsor", required = false) String sponsor,HttpServletRequest request)
-      throws MultipartException, FileNotFoundException, IOException {
-  /*String name = csv.getName();
-  String[] check = name.split(".");
-  if ((check[check.length-1]=="csv")) { //csv.isFile() && 
+public ResponseEntity<File> generateShortenedCSV(@RequestParam("csv") MultipartFile csv, @RequestParam(value = "sponsor", required = false) String sponsor,HttpServletRequest request)
+  throws MultipartException, FileNotFoundException, IOException {
+  if (csv.getOriginalFilename().length()>1) { //Hay fichero, sino es una petición vacía
 
-    BufferedReader csvReader = new BufferedReader(new FileReader(csv));
+    File file = new File("shortened.csv");
 
-    FileWriter csvWriter = new FileWriter(csv);
-    String row;
+    InputStream is = csv.getInputStream();
+    BufferedReader br = new BufferedReader(new InputStreamReader(is));
+    BufferedWriter csvWriter = new BufferedWriter(new FileWriter(file));
+    
+    String line;
+    while ((line = br.readLine()) != null) {
+      String shortLine = shortenerCSV(line);
+      csvWriter.write(line+";"+shortLine+";exito;\n"); //TODO: Cambiar exito por el resultado real y no escribir si da error
+    }
+
+    //returnable=returnable+line+";"+shortLine+";exito;\n";
+    //FileWriter csvWriter = new FileWriter(file);
+    /*String row;
     while ((row = csvReader.readLine()) != null) {
       String[] data = row.split(",");
       String[] shortened = data;
       for (int i=0;i<data.length;i++){
         shortened[i] = shortenerCSV(data[i]);
-      }
-      csvWriter.append(String.join(",",shortened));
-      csvWriter.append("\n");
-    }
-    csvReader.close();
+      }*/
+      //csvWriter.append(String.join(",",shortened));
+      //csvWriter.append("\n");
+    //}
+    //csvReader.close();
     csvWriter.flush();
-
-    return csvWriter.toString();*/
-    String answer="good";
-    return new ResponseEntity<>(answer,HttpStatus.CREATED);/*
+    csvWriter.close();
+    return new ResponseEntity<>(file,HttpStatus.CREATED);
   } else {
-    return "error";
-  }*/
+    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+  }
 }
+
 public String shortenerCSV(String url) {
     UrlValidator urlValidator = new UrlValidator(new String[] {"http","https"});
     if (urlValidator.isValid(url)) {
       ShortURL su = shortUrlService.save(url, "0", "0");
       return su.getUri().toString();
     } else {
-      return "Couldn't convert the url \" "+url+" \"";
+      return "ERROR";
     }
   }
 }
