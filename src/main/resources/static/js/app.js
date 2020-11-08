@@ -97,4 +97,34 @@ $(document).ready(
                     }
                 });
             });
+        $("#agentsInfo").submit(
+            function (event) {
+                event.preventDefault();
+                $("#result").html(
+                    "<div class='alert alert-danger lead' style='display: none'></div>");
+                $("#resultQr").html(
+                    "<div class='alert alert-danger lead' style='display: none'></div>");
+                $("#result2").html(
+                    "<div class='alert alert-danger lead' style='display: none'></div>");
+                $.ajax({
+                    type: "GET",
+                    url: "/agentsInfo",
+                    //////////////////////////////COMO PASARLE DATOS DEL HEADERS EN DATA
+                    data: $(this).serialize(),
+                    success: function (msg) {
+                        console.log(msg)
+                        $("#resultA").html(
+                            "<div class='alert alert-success lead'><a target='_blank' href='"
+                            + msg
+                            + "'>"
+                            + msg
+                            + "</a></div>"
+                            );
+                    },
+                    error: function () {
+                        $("#resultA").html(
+                            "<div class='alert alert-danger lead'>ERROR</div>");
+                    }
+                    });
+                });
     });

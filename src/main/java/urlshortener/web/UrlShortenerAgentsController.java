@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,31 +29,13 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import javax.imageio.ImageIO;
-import java.io.ByteArrayOutputStream;
-
-import java.lang.Object;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.StringWriter;  
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
-import java.util.Base64;
-import java.util.*;
-
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import com.blueconic.browscap.Capabilities;
+import com.blueconic.browscap.UserAgentParser;
+import com.blueconic.browscap.ParseException;
+import com.blueconic.browscap.UserAgentService;
 
 @RestController
 public class UrlShortenerAgentsController {
@@ -61,8 +44,27 @@ public class UrlShortenerAgentsController {
 
   private final ClickService clickService;
 
+  private UserAgentParser userAgentParser = null;
+
   public UrlShortenerAgentsController(ShortURLService shortUrlService, ClickService clickService) {
     this.shortUrlService = shortUrlService;
     this.clickService = clickService;
+    try{
+      this.userAgentParser = new UserAgentService().loadParser(); // handle IOException and ParseException
+    }
+    catch(IOException e){}
+    catch(ParseException e) {}
+  }
+
+ 
+  @RequestMapping(value = "/agentsInfo", method = RequestMethod.GET)
+  public ResponseEntity<String> agentsInfo(@RequestHeader(value = "User-Agent") String userAgent) {
+    Capabilities capabilities = userAgentParser.parse(userAgent);
+    String browser = capabilities.getBrowser();
+    String os = capabilities.getPlatform();
+
+    HttpHeaders h = new HttpHeaders();
+    String res = String.format("Browser: %s, OS: %s",browser,os);
+    return new ResponseEntity<>(res, h, HttpStatus.OK);
   }
 }

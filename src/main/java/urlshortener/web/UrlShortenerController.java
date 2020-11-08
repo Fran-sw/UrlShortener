@@ -112,7 +112,7 @@ public class UrlShortenerController {
       HttpHeaders h = new HttpHeaders();
       h.setLocation(su.getUri());
       if(!check_Reachable(su.getUri().toString())){
-        // SHORT URI NOT REACHABLE -> WE WILL NEED TO MARK IT -> INOMPLETE FOR THE 10 POINTS
+        // SHORT URI NOT REACHABLE -> WE WILL NEED TO MARK IT -> INCOMPLETE FOR THE 10 POINTS
         shortUrlService.mark(su,false);
       }
       else{
