@@ -51,9 +51,9 @@ public class ShortURLService {
   }
 
   //Function to check if an url is reachable
-  public boolean check_Reachable(String short_uri){
+  public boolean checkReachable(String shortUri){
     try{
-      URL url = new URL(short_uri);
+      URL url = new URL(shortUri);
       HttpURLConnection huc = (HttpURLConnection) url.openConnection();
 
       int responseCode = huc.getResponseCode();
