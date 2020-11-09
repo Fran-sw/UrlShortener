@@ -61,23 +61,6 @@ public class UrlShortenerController {
 
   private final ClickService clickService;
 
-  //Function to check if an url is reachable
-  private boolean check_Reachable(String short_uri){
-    try{
-      URL url = new URL(short_uri);
-      HttpURLConnection huc = (HttpURLConnection) url.openConnection();
-
-      int responseCode = huc.getResponseCode();
-      if(responseCode == 200){
-        return true;
-      }
-      else{
-        return false;
-      }
-    }
-    catch(IOException e) {return false;}
-  }
-
   // Function to trat USER AGENT
   //private void user_agents_treatment(HttpServletRequest request){
     //UserAgent u_agent = UserAgent.parseUserAgentString(request.getHeader("User-Agent"));
@@ -111,12 +94,12 @@ public class UrlShortenerController {
       ShortURL su = shortUrlService.save(url, sponsor, request.getRemoteAddr());
       HttpHeaders h = new HttpHeaders();
       h.setLocation(su.getUri());
-      if(!check_Reachable(su.getUri().toString())){
+      if(!shortUrlService.check_Reachable(su.getUri().toString())){
         // SHORT URI NOT REACHABLE -> WE WILL NEED TO MARK IT -> INCOMPLETE FOR THE 10 POINTS
-        shortUrlService.mark(su,false);
+        su = shortUrlService.mark(su,false);
       }
       else{
-        shortUrlService.mark(su,true);
+        su = shortUrlService.mark(su,true);
       }
       return new ResponseEntity<>(su, h, HttpStatus.CREATED);
     } else {

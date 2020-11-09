@@ -11,6 +11,10 @@ import urlshortener.web.UrlShortenerController;
 
 import org.springframework.beans.DirectFieldAccessor;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 
 @Service
 public class ShortURLService {
@@ -45,4 +49,22 @@ public class ShortURLService {
   public ShortURL mark(ShortURL url, boolean safeness){
     return shortURLRepository.mark(url,safeness);
   }
+
+  //Function to check if an url is reachable
+  public boolean check_Reachable(String short_uri){
+    try{
+      URL url = new URL(short_uri);
+      HttpURLConnection huc = (HttpURLConnection) url.openConnection();
+
+      int responseCode = huc.getResponseCode();
+      if(responseCode == 200){
+        return true;
+      }
+      else{
+        return false;
+      }
+    }
+    catch(IOException e) {return false;}
+  }
+
 }
