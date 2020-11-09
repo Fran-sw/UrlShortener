@@ -109,7 +109,6 @@ $(document).ready(
                 $.ajax({
                     type: "GET",
                     url: "/agentsInfo",
-                    //////////////////////////////COMO PASARLE DATOS DEL HEADERS EN DATA
                     data: $(this).serialize(),
                     success: function (msg) {
                         console.log(msg)

@@ -95,7 +95,6 @@ public class UrlShortenerController {
       HttpHeaders h = new HttpHeaders();
       h.setLocation(su.getUri());
       if(!shortUrlService.checkReachable(su.getUri().toString())){
-        // SHORT URI NOT REACHABLE -> WE WILL NEED TO MARK IT -> INCOMPLETE FOR THE 10 POINTS
         su = shortUrlService.mark(su,false);
       }
       else{
