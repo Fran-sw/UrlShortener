@@ -79,17 +79,16 @@ $(document).ready(
                     contentType: false,
                     data: data,
                     success: function (msg) {
-                        console.log(msg)
+                        var blob = new Blob([msg],{type:'text/plain'});
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download="shortened.csv";
+                        link.innerHTML="Download File";
+                        //document.getElementsById("result2").innerHTML=link;
                         $("#result2").html(
-                            "<div class='alert alert-success lead'>"
-                            +
-                            "<a href='"
-                            +
-                            msg
-                            +
-                            "' type='text/csv' download='shortened'>Download File</a>"
-                            +
-                            "</div>");
+                            link);
+                        //link.click();
+                        //document.body.removeChild(link);
                     },
                     error: function () {
                         $("#result2").html(

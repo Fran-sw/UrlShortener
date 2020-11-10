@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
 import urlshortener.domain.ShortURL;
 import urlshortener.service.ClickService;
 import urlshortener.service.ShortURLService;
@@ -40,7 +41,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -67,39 +67,26 @@ public class UrlShortenerCVSController {
   }
 
 //Function to shorten al urls in a csv file
-@RequestMapping(value = "/csv", method = RequestMethod.POST)
-public ResponseEntity<File> generateShortenedCSV(@RequestParam("csv") MultipartFile csv, @RequestParam(value = "sponsor", required = false) String sponsor,HttpServletRequest request)
+@RequestMapping(value = "/csv", method = RequestMethod.POST, produces= MediaType.TEXT_PLAIN_VALUE)
+public ResponseEntity<String> generateShortenedCSV(@RequestParam("csv") MultipartFile csv, @RequestParam(value = "sponsor", required = false) String sponsor,HttpServletRequest request)
   throws MultipartException, FileNotFoundException, IOException {
   if (csv.getOriginalFilename().length()>1) { //Hay fichero, sino es una petición vacía
 
-    File file = new File("shortened.csv");
-
+    String file = "";
     InputStream is = csv.getInputStream();
     BufferedReader br = new BufferedReader(new InputStreamReader(is));
-    BufferedWriter csvWriter = new BufferedWriter(new FileWriter(file));
+    StringWriter csvWriter = new StringWriter();
     
     String line;
     while ((line = br.readLine()) != null) {
       String shortLine = shortenerCSV(line);
-      csvWriter.write(line+";"+shortLine+";exito;\n"); //TODO: Cambiar exito por el resultado real y no escribir si da error
+      if(shortUrlService.checkReachable(shortLine)){
+        csvWriter.write(line+";exito;"+shortLine+";\n");
+      }else{
+        csvWriter.write(line+";fracaso;\n"); 
+      }
     }
-
-    //returnable=returnable+line+";"+shortLine+";exito;\n";
-    //FileWriter csvWriter = new FileWriter(file);
-    /*String row;
-    while ((row = csvReader.readLine()) != null) {
-      String[] data = row.split(",");
-      String[] shortened = data;
-      for (int i=0;i<data.length;i++){
-        shortened[i] = shortenerCSV(data[i]);
-      }*/
-      //csvWriter.append(String.join(",",shortened));
-      //csvWriter.append("\n");
-    //}
-    //csvReader.close();
-    csvWriter.flush();
-    csvWriter.close();
-    return new ResponseEntity<>(file,HttpStatus.CREATED);
+    return new ResponseEntity<>(csvWriter.toString(),HttpStatus.CREATED);
   } else {
     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
