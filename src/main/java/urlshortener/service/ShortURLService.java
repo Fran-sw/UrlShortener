@@ -32,8 +32,8 @@ import com.blueconic.browscap.UserAgentService;
 
 @Service
 public class ShortURLService {
-  //private static final Logger log = LoggerFactory
-      //.getLogger(ShortURLService.class);
+  private static final Logger log = LoggerFactory
+      .getLogger(ShortURLService.class);
 
   private final ShortURLRepository shortURLRepository;
 
@@ -51,14 +51,6 @@ public class ShortURLService {
     catch(ParseException e){} 
 
     this.info_UserAgents = new HashMap<String, Integer>();
-    //Complete with more tags
-    info_UserAgents.put("Chrome",0);
-    info_UserAgents.put("Firefox",0);
-    info_UserAgents.put("IE",0);
-    info_UserAgents.put("Win10",0);
-    info_UserAgents.put("Win7",0);
-    info_UserAgents.put("Android",0);
-    info_UserAgents.put("IOS",0);
   }
 
   public void processAgents(String userAgent){
@@ -66,14 +58,33 @@ public class ShortURLService {
     String browser = capabilities.getBrowser();
     String os = capabilities.getPlatform();
 
-    int veces_B = info_UserAgents.get(browser);
-    int veces_SO = info_UserAgents.get(os);
-    info_UserAgents.put(browser,veces_B+1);
-    info_UserAgents.put(os,veces_SO+1);
+    int veces_B = info_UserAgents.getOrDefault(browser, -1);
+    int veces_SO = info_UserAgents.getOrDefault(os,-1);
+
+    // Verify if there is an entry in the MAP, elwhise create it
+    if(veces_B == -1){
+      info_UserAgents.put(browser,1);
+    }
+    else{
+      info_UserAgents.put(browser,veces_B+1);
+    }
+
+    if(veces_SO == -1){
+      info_UserAgents.put(os,1);
+    }
+    else{
+      info_UserAgents.put(os,veces_SO+1);
+    }
   }
 
   public String getAgentsInfo(){
-    String res = String.format("%s: %d \n%s: %d \n%s: %d \n%s: %d \n%s: %d \n%s: %d \n","Chrome",info_UserAgents.get("Chrome"),"Firefox",info_UserAgents.get("Firefox"),"IE",info_UserAgents.get("IE"),"Win10",info_UserAgents.get("Win10"),"Android",info_UserAgents.get("Android"),"IOS",info_UserAgents.get("IOS"));
+    Set<String> contenido = info_UserAgents.keySet();
+    Iterator<String> aux = contenido.iterator();
+    String res = "";
+    while(aux.hasNext()){
+      String uno = aux.next();
+      res = res + String.format("%s: %d \n",uno,info_UserAgents.get(uno));
+    }
     return res;
   }
 
