@@ -25,19 +25,30 @@ import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+import com.blueconic.browscap.Capabilities;
+import com.blueconic.browscap.UserAgentParser;
+import com.blueconic.browscap.ParseException;
+import com.blueconic.browscap.UserAgentService;
 
 @Service
 public class ShortURLService {
-  private static final Logger log = LoggerFactory
-      .getLogger(ShortURLService.class);
+  //private static final Logger log = LoggerFactory
+      //.getLogger(ShortURLService.class);
 
   private final ShortURLRepository shortURLRepository;
 
   Map<String, Integer> info_UserAgents;
+  private UserAgentParser userAgentParser = null;
+
 
   public ShortURLService(ShortURLRepository shortURLRepository) {
     this.shortURLRepository = shortURLRepository;
+
+    try{
+      this.userAgentParser = new UserAgentService().loadParser(); // handle IOException and ParseException
+    }
+    catch(IOException e){}
+    catch(ParseException e){} 
 
     this.info_UserAgents = new HashMap<String, Integer>();
     //Complete with more tags
@@ -50,7 +61,11 @@ public class ShortURLService {
     info_UserAgents.put("IOS",0);
   }
 
-  public void processAgents(String browser, String os){
+  public void processAgents(String userAgent){
+    Capabilities capabilities = userAgentParser.parse(userAgent);
+    String browser = capabilities.getBrowser();
+    String os = capabilities.getPlatform();
+
     int veces_B = info_UserAgents.get(browser);
     int veces_SO = info_UserAgents.get(os);
     info_UserAgents.put(browser,veces_B+1);

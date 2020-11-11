@@ -32,10 +32,6 @@ import java.nio.file.Path;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import com.blueconic.browscap.Capabilities;
-import com.blueconic.browscap.UserAgentParser;
-import com.blueconic.browscap.ParseException;
-import com.blueconic.browscap.UserAgentService;
 
 import java.util.*;
 
@@ -46,31 +42,16 @@ public class UrlShortenerAgentsController {
 
   private final ClickService clickService;
 
-  private UserAgentParser userAgentParser = null;
-
   public UrlShortenerAgentsController(ShortURLService shortUrlService, ClickService clickService) {
     this.shortUrlService = shortUrlService;
-    this.clickService = clickService;
-    try{
-      this.userAgentParser = new UserAgentService().loadParser(); // handle IOException and ParseException
-    }
-    catch(IOException e){}
-    catch(ParseException e){}
-
-    
+    this.clickService = clickService;   
   }
 
  
   @RequestMapping(value = "/agentsInfo", method = RequestMethod.GET)
   public ResponseEntity<String> agentsInfo(@RequestHeader(value = "User-Agent") String userAgent) {
-    Capabilities capabilities = userAgentParser.parse(userAgent);
-    String browser = capabilities.getBrowser();
-    String os = capabilities.getPlatform();
-
     HttpHeaders h = new HttpHeaders();
-
-    shortUrlService.processAgents(browser,os);
-
+    shortUrlService.processAgents(userAgent);
     String res = shortUrlService.getAgentsInfo();
     return new ResponseEntity<>(res, h, HttpStatus.OK);
   }
