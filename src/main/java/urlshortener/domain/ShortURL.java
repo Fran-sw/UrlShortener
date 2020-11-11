@@ -42,47 +42,87 @@ public class ShortURL {
     return hash;
   }
 
+  public void setHash(String hash) {
+    this.hash = hash;
+  }
+
   public String getTarget() {
     return target;
+  }
+
+  public void setTarget(String target) {
+    this.target = target;
   }
 
   public URI getUri() {
     return uri;
   }
 
+  public void setUri(URI uri) {
+    this.uri = uri;
+  }
+
   public Date getCreated() {
     return created;
+  }
+
+  public void setCreated(Date created) {
+    this.created = created;
   }
 
   public String getOwner() {
     return owner;
   }
 
+  public void setOwner(String owner) {
+    this.owner = owner;
+  }
+
   public Integer getMode() {
     return mode;
+  }
+
+  public void setMode(Integer mode) {
+    this.mode = mode;
   }
 
   public String getSponsor() {
     return sponsor;
   }
 
+  public void setSponsor(String sponsor) {
+    this.sponsor = sponsor;
+  }
+
   public Boolean getSafe() {
     return safe;
+  }
+
+  public void setSafe(Boolean safe) {
+    this.safe = safe;
   }
 
   public String getIP() {
     return ip;
   }
 
+  public void setIP(String ip) {
+    this.ip = ip;
+  }
+
   public String getCountry() {
     return country;
+  }
+
+  public void setCountry(String country) {
+    this.country = country;
   }
 
   public String getQr(){
     return qr;
   }
 
-  public void set_qr(String new_qr) {
-    this.qr = new_qr;
+  public void setQr(String newQr) {
+    this.qr = newQr;
   }
 }

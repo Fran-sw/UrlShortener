@@ -55,7 +55,11 @@ $(document).ready(
                     },
                     error: function () {
                         $("#resultQr").html(
-                            "<div class='alert alert-danger lead'>ERROR</div>");
+                            "<div class='alert alert-danger lead'>ERROR "
+                            +
+                            msg
+                            +
+                            "</div>");
                     }
                 });
             });
@@ -75,25 +79,20 @@ $(document).ready(
                     url: "/csv",
                     enctype: 'multipart/form-data',
                     processData: false,
-                    //contentType: multipart/form-data, charset=utf-8, boundary="---54143246---",
                     contentType: false,
                     data: data,
                     success: function (msg) {
-                        console.log(msg)
+                        var blob = new Blob([msg],{type:'text/plain'});
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download="shortened.csv";
+                        link.innerHTML="Download File";
                         $("#result2").html(
-                            "<div class='alert alert-success lead'>"
-                            +
-                            "<a href='"
-                            +
-                            msg
-                            +
-                            "' type='text/csv' download='shortened'>Download File</a>"
-                            +
-                            "</div>");
+                            link);
                     },
                     error: function () {
                         $("#result2").html(
-                            "<div class='alert alert-danger lead'>File not found</div>");
+                            "<div class='alert alert-danger lead'>ERROR</div>");
                     }
                 });
             });
@@ -109,7 +108,6 @@ $(document).ready(
                 $.ajax({
                     type: "GET",
                     url: "/agentsInfo",
-                    //////////////////////////////COMO PASARLE DATOS DEL HEADERS EN DATA
                     data: $(this).serialize(),
                     success: function (msg) {
                         console.log(msg)

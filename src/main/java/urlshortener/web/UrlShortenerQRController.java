@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -77,9 +78,11 @@ public class UrlShortenerQRController {
   public ResponseEntity<ShortURL> shortenerQR(@RequestParam("url") String url,
                                             @RequestParam(value = "sponsor", required = false)
                                             String sponsor,
+                                            @RequestHeader(value = "User-Agent") String userAgent,
                                             HttpServletRequest request) {
     UrlValidator urlValidator = new UrlValidator(new String[] {"http",
         "https"});
+    shortUrlService.processAgents(userAgent);
     if (urlValidator.isValid(url)) {
       ShortURL su = shortUrlService.save(url, sponsor, request.getRemoteAddr());
       HttpHeaders h = new HttpHeaders();
@@ -87,7 +90,7 @@ public class UrlShortenerQRController {
       
       try {
         String qr = generateQRCodeImage(su.getUri().toString(),250,250);
-        su.set_qr(qr);
+        su.setQr(qr);
       } catch (WriterException e) {
           System.out.println("Could not generate QR Code, WriterException :: " + e.getMessage());
       } catch (IOException e) {
