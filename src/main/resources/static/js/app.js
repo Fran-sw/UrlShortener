@@ -86,7 +86,7 @@ $(document).ready(
                         link.innerHTML="Download File";
                         //document.getElementsById("result2").innerHTML=link;
                         $("#result2").html(
-                            link);
+                            msg);
                         //link.click();
                         //document.body.removeChild(link);
                     },

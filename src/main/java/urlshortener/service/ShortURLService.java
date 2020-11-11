@@ -22,10 +22,15 @@ import com.blueconic.browscap.UserAgentService;
 
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 
 @Service
 public class ShortURLService {
+  private static final Logger log = LoggerFactory
+      .getLogger(ShortURLService.class);
 
   private final ShortURLRepository shortURLRepository;
 
@@ -88,8 +93,10 @@ public class ShortURLService {
       URL url = new URL(shortUri);
       HttpURLConnection huc = (HttpURLConnection) url.openConnection();
 
-      int responseCode = huc.getResponseCode();
-      if(responseCode == 200){
+      Integer responseCode = huc.getResponseCode();
+      //log.info("URL CODE: {}", responseCode);
+
+      if(responseCode < 400){
         return true;
       }
       else{
