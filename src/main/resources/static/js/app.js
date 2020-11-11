@@ -55,7 +55,11 @@ $(document).ready(
                     },
                     error: function () {
                         $("#resultQr").html(
-                            "<div class='alert alert-danger lead'>ERROR</div>");
+                            "<div class='alert alert-danger lead'>ERROR "
+                            +
+                            msg
+                            +
+                            "</div>");
                     }
                 });
             });
@@ -75,7 +79,6 @@ $(document).ready(
                     url: "/csv",
                     enctype: 'multipart/form-data',
                     processData: false,
-                    //contentType: multipart/form-data, charset=utf-8, boundary="---54143246---",
                     contentType: false,
                     data: data,
                     success: function (msg) {
@@ -84,15 +87,12 @@ $(document).ready(
                         link.href = window.URL.createObjectURL(blob);
                         link.download="shortened.csv";
                         link.innerHTML="Download File";
-                        //document.getElementsById("result2").innerHTML=link;
                         $("#result2").html(
-                            msg);
-                        //link.click();
-                        //document.body.removeChild(link);
+                            link);
                     },
                     error: function () {
                         $("#result2").html(
-                            "<div class='alert alert-danger lead'>File not found</div>");
+                            "<div class='alert alert-danger lead'>ERROR</div>");
                     }
                 });
             });
