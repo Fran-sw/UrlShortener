@@ -106,7 +106,7 @@ public ResponseEntity<String> generateShortenedCSV( @RequestHeader(value = "User
 
 public String shortenerCSV(String url,String sponsor,HttpServletRequest request) {
     UrlValidator urlValidator = new UrlValidator(new String[] {"http","https"});
-    if (urlValidator.isValid(url)) {
+    if (urlValidator.isValid(url) && shortUrlService.checkReachable(url)) {
       ShortURL su = shortUrlService.save(url, sponsor, request.getRemoteAddr());
       if(!shortUrlService.checkReachable(su.getUri().toString())){
         su = shortUrlService.mark(su,false);
