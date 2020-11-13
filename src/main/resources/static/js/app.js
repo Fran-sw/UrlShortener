@@ -14,14 +14,31 @@ $(document).ready(
                     url: "/link",
                     data: $(this).serialize(),
                     success: function (msg) {
+                        devolver = "";
                         console.log(msg)
-                        $("#result").html(
+                        if (msg.qr != null) {
+                            devolver =
                             "<div class='alert alert-success lead'><a target='_blank' href='"
                             + msg.uri
                             + "'>"
                             + msg.uri
                             + "</a></div>"
-                            );
+                            + "<img src=\"data:image/png;base64, " + msg.qr +"\" />"
+                            + "<div class='alert alert-success lead'><a target='_blank' href='"
+                            + "data:image/png;base64, " + msg.qr
+                            + "'>"
+                            + msg.uri+ ".png"
+                            + "</a></div>"
+                        } else {
+                            devolver = 
+                            "<div class='alert alert-success lead'><a target='_blank' href='"
+                            + msg.uri
+                            + "'>"
+                            + msg.uri
+                            + "</a></div>"
+                            
+                        }
+                        $("#result").html(devolver);
                     },
                     error: function () {
                         $("#result").html(
@@ -45,12 +62,7 @@ $(document).ready(
                     success: function (msg) {
                         console.log(msg)
                         $("#resultQr").html(
-                            "<img src=\"data:image/png;base64, " + msg.qr +"\" />"
-                            + "<div class='alert alert-success lead'><a target='_blank' href='"
-                            + "data:image/png;base64, " + msg.qr
-                            + "'>"
-                            + msg.uri+ ".png"
-                            + "</a></div>"
+
                             );
                     },
                     error: function () {

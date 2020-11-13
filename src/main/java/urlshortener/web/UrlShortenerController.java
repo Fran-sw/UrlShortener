@@ -72,6 +72,19 @@ public class UrlShortenerController {
     this.clickService = clickService;
   }
 
+  private static String generateQRCodeImage(String uri,int width, int height)
+          throws WriterException, IOException {
+      QRCodeWriter qrCodeWriter = new QRCodeWriter();
+      BitMatrix bitMatrix = qrCodeWriter.encode(uri, BarcodeFormat.QR_CODE, width, height);
+      BufferedImage new_qr = MatrixToImageWriter.toBufferedImage(bitMatrix);
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      ImageIO.write(new_qr,"png",bos);
+      byte[] qr_b = bos.toByteArray();
+      qr_b = Base64.getEncoder().encode(qr_b);
+      String qr = new String(qr_b);
+      return qr;
+  }
+
   @RequestMapping(value = "/{id:(?!link|index).*}", method = RequestMethod.GET)
   public ResponseEntity<?> redirectTo(@PathVariable String id,
                                       HttpServletRequest request) {
@@ -89,6 +102,7 @@ public class UrlShortenerController {
                                             @RequestParam(value = "sponsor", required = false)
                                             String sponsor,
                                             @RequestHeader(value = "User-Agent") String userAgent,
+                                            @RequestParam(value = "iWantQr", required = false) String checkboxValue,
                                             HttpServletRequest request) {
     UrlValidator urlValidator = new UrlValidator(new String[] {"http",
         "https"});
@@ -103,6 +117,16 @@ public class UrlShortenerController {
       }
       else{
         su = shortUrlService.mark(su,true);
+      }
+      if (checkboxValue != null){
+        try {
+          String qr = generateQRCodeImage(su.getUri().toString(),250,250);
+          su.setQr(qr);
+        } catch (WriterException e) {
+            System.out.println("Could not generate QR Code, WriterException :: " + e.getMessage());
+        } catch (IOException e) {
+          System.out.println("Could not generate QR Code, IOException :: " + e.getMessage());
+        }
       }
       return new ResponseEntity<>(su, h, HttpStatus.CREATED);
     } else {
