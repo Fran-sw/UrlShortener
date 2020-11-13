@@ -49,10 +49,10 @@ public class UrlShortenerAgentsController {
 
  
   @RequestMapping(value = "/agentsInfo", method = RequestMethod.GET)
-  public ResponseEntity<String> agentsInfo(@RequestHeader(value = "User-Agent") String userAgent) {
+  public ResponseEntity<Map<String, Integer>> agentsInfo(@RequestHeader(value = "User-Agent") String userAgent) {
     HttpHeaders h = new HttpHeaders();
     shortUrlService.processAgents(userAgent);
-    String res = shortUrlService.getAgentsInfo();
+    Map<String, Integer> res = shortUrlService.getAgentsInfo();
     return new ResponseEntity<>(res, h, HttpStatus.OK);
   }
 }

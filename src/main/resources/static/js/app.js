@@ -122,12 +122,23 @@ $(document).ready(
                     data: $(this).serialize(),
                     success: function (msg) {
                         console.log(msg)
+                        var res = "";
+
+                        function* entries(obj){
+                            for(let key in obj)
+                                yield [key,obj[key]];
+                        }
+                        var map = new Map(entries(msg))
+
+                        for (var [key,value] of map){
+                            res = res + key + ": " + value + "\n";
+                        }
+                        console.log(res)
+
                         $("#resultA").html(
-                            "<div class='alert alert-success lead'><a target='_blank' href='"
-                            + msg
-                            + "'>"
-                            + msg
-                            + "</a></div>"
+                            "<div class='alert alert-success lead'>"
+                            + res
+                            +" </div>"
                             );
                     },
                     error: function () {

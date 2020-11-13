@@ -37,7 +37,7 @@ public class ShortURLService {
 
   private final ShortURLRepository shortURLRepository;
 
-  Map<String, Integer> info_UserAgents;
+  Map<String, Integer> infoUserAgents;
   private UserAgentParser userAgentParser = null;
 
 
@@ -50,7 +50,7 @@ public class ShortURLService {
     catch(IOException e){}
     catch(ParseException e){} 
 
-    this.info_UserAgents = new HashMap<String, Integer>();
+    this.infoUserAgents = new HashMap<String, Integer>();
   }
 
   public void processAgents(String userAgent){
@@ -58,34 +58,27 @@ public class ShortURLService {
     String browser = capabilities.getBrowser();
     String os = capabilities.getPlatform();
 
-    int veces_B = info_UserAgents.getOrDefault(browser, -1);
-    int veces_SO = info_UserAgents.getOrDefault(os,-1);
+    int veces_B = infoUserAgents.getOrDefault(browser, -1);
+    int veces_SO = infoUserAgents.getOrDefault(os,-1);
 
     // Verify if there is an entry in the MAP, elwhise create it
     if(veces_B == -1){
-      info_UserAgents.put(browser,1);
+      infoUserAgents.put(browser,1);
     }
     else{
-      info_UserAgents.put(browser,veces_B+1);
+      infoUserAgents.put(browser,veces_B+1);
     }
 
     if(veces_SO == -1){
-      info_UserAgents.put(os,1);
+      infoUserAgents.put(os,1);
     }
     else{
-      info_UserAgents.put(os,veces_SO+1);
+      infoUserAgents.put(os,veces_SO+1);
     }
   }
 
-  public String getAgentsInfo(){
-    Set<String> contenido = info_UserAgents.keySet();
-    Iterator<String> aux = contenido.iterator();
-    String res = "";
-    while(aux.hasNext()){
-      String uno = aux.next();
-      res = res + String.format("%s: %d \n",uno,info_UserAgents.get(uno));
-    }
-    return res;
+  public Map<String, Integer> getAgentsInfo(){
+    return infoUserAgents;
   }
 
   public ShortURL findByKey(String id) {
