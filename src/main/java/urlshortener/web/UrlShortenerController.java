@@ -102,7 +102,7 @@ public class UrlShortenerController {
                                             @RequestParam(value = "sponsor", required = false)
                                             String sponsor,
                                             @RequestHeader(value = "User-Agent") String userAgent,
-                                            @RequestParam(value = "iWantQr", required = false) String checkboxValue,
+                                            @RequestParam(value = "qr", required = false) String checkboxValue,
                                             HttpServletRequest request) {
     UrlValidator urlValidator = new UrlValidator(new String[] {"http",
         "https"});
