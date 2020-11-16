@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import urlshortener.domain.ShortURL;
 import urlshortener.service.ClickService;
 import urlshortener.service.ShortURLService;
+import urlshortener.service.ServiceAgents;
+
 
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartException;
@@ -62,14 +64,13 @@ public class UrlShortenerController {
 
   private final ClickService clickService;
 
-  // Function to trat USER AGENT
-  //private void user_agents_treatment(HttpServletRequest request){
-    //UserAgent u_agent = UserAgent.parseUserAgentString(request.getHeader("User-Agent"));
-  //}
+  private final ServiceAgents serviceAgents;
 
-  public UrlShortenerController(ShortURLService shortUrlService, ClickService clickService) {
+
+  public UrlShortenerController(ShortURLService shortUrlService, ClickService clickService, ServiceAgents serviceAgents) {
     this.shortUrlService = shortUrlService;
     this.clickService = clickService;
+    this.serviceAgents = serviceAgents;
   }
 
   private static String generateQRCodeImage(String uri,int width, int height)
@@ -89,7 +90,7 @@ public class UrlShortenerController {
   public ResponseEntity<?> redirectTo(@PathVariable String id,
                                       HttpServletRequest request) {
     ShortURL l = shortUrlService.findByKey(id);
-    if (l != null) {
+    if (l != null && shortUrlService.checkReachable(l.getUri().toString())) {
       clickService.saveClick(id, extractIP(request));
       return createSuccessfulRedirectToResponse(l);
     } else {
@@ -107,7 +108,7 @@ public class UrlShortenerController {
     UrlValidator urlValidator = new UrlValidator(new String[] {"http",
         "https"});
     //We get user agants
-    shortUrlService.processAgents(userAgent);
+    serviceAgents.processAgents(userAgent);
     if (urlValidator.isValid(url)) {
       ShortURL su = shortUrlService.save(url, sponsor, request.getRemoteAddr());
       HttpHeaders h = new HttpHeaders();

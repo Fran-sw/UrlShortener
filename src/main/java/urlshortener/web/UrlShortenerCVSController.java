@@ -16,6 +16,8 @@ import org.springframework.http.MediaType;
 import urlshortener.domain.ShortURL;
 import urlshortener.service.ClickService;
 import urlshortener.service.ShortURLService;
+import urlshortener.service.ServiceAgents;
+
 
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartException;
@@ -68,9 +70,12 @@ public class UrlShortenerCVSController {
 
   private final ClickService clickService;
 
-  public UrlShortenerCVSController(ShortURLService shortUrlService, ClickService clickService) {
+  private final ServiceAgents serviceAgents;
+
+  public UrlShortenerCVSController(ShortURLService shortUrlService, ClickService clickService,ServiceAgents serviceAgents) {
     this.shortUrlService = shortUrlService;
     this.clickService = clickService;
+    this.serviceAgents = serviceAgents;
   }
 
   @ExceptionHandler({ MultipartException.class})
@@ -92,7 +97,7 @@ public class UrlShortenerCVSController {
 @RequestMapping(value = "/csv", method = RequestMethod.POST, produces= MediaType.TEXT_PLAIN_VALUE)
 public ResponseEntity<String> generateShortenedCSV( @RequestHeader(value = "User-Agent") String userAgent, @RequestParam("csv") MultipartFile csv, @RequestParam(value = "sponsor", required = false) String sponsor,HttpServletRequest request)
   throws IOException{
-  shortUrlService.processAgents(userAgent);
+  serviceAgents.processAgents(userAgent);
   if (csv.getOriginalFilename().length()>1) { //Hay fichero, sino es una petición vacía
     String file = "";
     InputStream is = csv.getInputStream();

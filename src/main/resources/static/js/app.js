@@ -41,36 +41,7 @@ $(document).ready(
                     },
                     error: function () {
                         $("#result").html(
-                            "<div class='alert alert-danger lead'>ERROR</div>");
-                    }
-                });
-            });
-        $("#shortenerQR").submit(
-            function (event) {
-                event.preventDefault();
-                $("#result").html(
-                    "<div class='alert alert-danger lead' style='display: none'></div>");
-                $("#resultQr").html(
-                    "<div class='alert alert-danger lead' style='display: none'></div>");
-                $("#result2").html(
-                    "<div class='alert alert-danger lead' style='display: none'></div>");
-                $.ajax({
-                    type: "POST",
-                    url: "/linkQR",
-                    data: $(this).serialize(),
-                    success: function (msg) {
-                        console.log(msg)
-                        $("#resultQr").html(
-
-                            );
-                    },
-                    error: function () {
-                        $("#resultQr").html(
-                            "<div class='alert alert-danger lead'>ERROR "
-                            +
-                            msg
-                            +
-                            "</div>");
+                            "<div class='alert alert-danger lead'>ERROR: URL de destino no valida todavia</div>");
                     }
                 });
             });
@@ -122,22 +93,11 @@ $(document).ready(
                     data: $(this).serialize(),
                     success: function (msg) {
                         console.log(msg)
-                        var res = "";
-
-                        function* entries(obj){
-                            for(let key in obj)
-                                yield [key,obj[key]];
-                        }
-                        var map = new Map(entries(msg))
-
-                        for (var [key,value] of map){
-                            res = res + key + ": " + value + "\n";
-                        }
-                        console.log(res)
+                        var s = JSON.stringify(msg);
 
                         $("#resultA").html(
                             "<div class='alert alert-success lead'>"
-                            + res
+                            + s
                             +" </div>"
                             );
                     },
