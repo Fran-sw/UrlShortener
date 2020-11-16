@@ -90,7 +90,8 @@ public class UrlShortenerController {
   public ResponseEntity<?> redirectTo(@PathVariable String id,
                                       HttpServletRequest request) {
     ShortURL l = shortUrlService.findByKey(id);
-    if (l != null && shortUrlService.checkReachable(l.getUri().toString())) {
+    if (l != null) {
+      //&& shortUrlService.checkReachable(l.getUri().toString())
       clickService.saveClick(id, extractIP(request));
       return createSuccessfulRedirectToResponse(l);
     } else {

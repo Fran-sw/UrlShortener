@@ -99,7 +99,6 @@ public ResponseEntity<String> generateShortenedCSV( @RequestHeader(value = "User
   throws IOException{
   serviceAgents.processAgents(userAgent);
   if (csv.getOriginalFilename().length()>1) { //Hay fichero, sino es una petición vacía
-    String file = "";
     InputStream is = csv.getInputStream();
     BufferedReader br = new BufferedReader(new InputStreamReader(is));
     StringWriter csvWriter = new StringWriter();
