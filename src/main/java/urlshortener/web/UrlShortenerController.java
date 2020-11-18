@@ -57,6 +57,9 @@ import java.util.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 public class UrlShortenerController {
 
@@ -65,6 +68,9 @@ public class UrlShortenerController {
   private final ClickService clickService;
 
   private final ServiceAgents serviceAgents;
+
+  private static final Logger log = LoggerFactory
+      .getLogger(ShortURLService.class);
 
 
   public UrlShortenerController(ShortURLService shortUrlService, ClickService clickService, ServiceAgents serviceAgents) {
@@ -103,18 +109,22 @@ public class UrlShortenerController {
   public ResponseEntity<ShortURL> shortener(@RequestParam("url") String url,
                                             @RequestParam(value = "sponsor", required = false)
                                             String sponsor,
-                                            @RequestHeader(value = "User-Agent") String userAgent,
+                                            @RequestHeader(value = "User-Agent", required = false) String userAgent,
                                             @RequestParam(value = "qr", required = false) String checkboxValue,
                                             HttpServletRequest request) {
     UrlValidator urlValidator = new UrlValidator(new String[] {"http",
         "https"});
     //We get user agants
-    serviceAgents.processAgents(userAgent);
+    if(userAgent != null && userAgent.equals("")){
+      serviceAgents.processAgents(userAgent);
+      log.info("User agents es {}",userAgent);
+    }
+
     if (urlValidator.isValid(url)) {
       ShortURL su = shortUrlService.save(url, sponsor, request.getRemoteAddr());
       HttpHeaders h = new HttpHeaders();
       h.setLocation(su.getUri());
-      if(!shortUrlService.checkReachable(su.getUri().toString())){
+      if(!shortUrlService.checkReachable(su.getTarget().toString())){
         su = shortUrlService.mark(su,false);
       }
       else{
