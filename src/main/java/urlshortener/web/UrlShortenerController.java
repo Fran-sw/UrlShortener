@@ -115,9 +115,9 @@ public class UrlShortenerController {
     UrlValidator urlValidator = new UrlValidator(new String[] {"http",
         "https"});
     //We get user agants
-    if(userAgent != null && userAgent.equals("")){
+    if(userAgent != null && !userAgent.equals("")){
       serviceAgents.processAgents(userAgent);
-      log.info("User agents es {}",userAgent);
+      //log.info("User agents es {}",userAgent);
     }
 
     if (urlValidator.isValid(url)) {
@@ -130,6 +130,7 @@ public class UrlShortenerController {
       else{
         su = shortUrlService.mark(su,true);
       }
+
       if (checkboxValue != null){
         try {
           String qr = generateQRCodeImage(su.getUri().toString(),250,250);
@@ -140,6 +141,7 @@ public class UrlShortenerController {
           System.out.println("Could not generate QR Code, IOException :: " + e.getMessage());
         }
       }
+      log.info("TENGO hash: {}",su.getHash());
       return new ResponseEntity<>(su, h, HttpStatus.CREATED);
     } else {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

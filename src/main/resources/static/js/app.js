@@ -21,7 +21,8 @@ $(document).ready(
                             "<div class='alert alert-success lead'><a target='_blank' href='"
                             + msg.uri
                             + "'>"
-                            + msg.uri + "</div>"
+                            + msg.uri 
+                            + "</div>"
     
                             + "<div class='alert alert-success lead'><a target='_blank' href='"
                             + "data:image/png;base64, " + msg.qr

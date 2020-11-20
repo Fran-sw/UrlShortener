@@ -11,6 +11,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static urlshortener.fixtures.ShortURLFixture.someUrl;
+import static urlshortener.fixtures.ShortURLFixture.shortURL1;
+import static urlshortener.fixtures.ShortURLFixture.shortURL2;
+
 
 
 import java.net.URI;
@@ -69,6 +72,9 @@ public class UrlShortenerTests {
   @Ignore
   public void thatShortenerCreatesARedirectIfTheURLisOK() throws Exception {
     configureSave(null);
+    when(shortUrlService.save("http://example.com/",null,"127.0.0.1")).thenReturn(shortURL1());
+    when(shortUrlService.checkReachable("http://example.com/")).thenReturn(true);
+    when(shortUrlService.mark(shortURL1(),false)).thenReturn(shortURL2());
 
     mockMvc.perform(post("/link").param("url", "http://example.com/"))
         .andDo(print())
