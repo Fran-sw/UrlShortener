@@ -63,12 +63,12 @@ public class ShortURLRepositoryImpl implements ShortURLRepository {
   @Override
   public ShortURL mark(ShortURL su, boolean safeness) {
     try {
-      jdbc.update("UPDATE shorturl SET safe=? WHERE hash=?", safeness,
-          su.getHash());
-      ShortURL res = new ShortURL();
-      BeanUtils.copyProperties(su, res);
-      new DirectFieldAccessor(res).setPropertyValue("safe", safeness);
-      return res;
+     jdbc.update("UPDATE shorturl SET safe=? WHERE hash=?", safeness,su.getHash());
+     return new ShortURL(
+        su.getHash(), su.getTarget(), su.getUri(), su.getSponsor(),
+        su.getCreated(), su.getOwner(), su.getMode(), safeness,
+        su.getIP(), su.getCountry(), su.getQr()
+     );
     } catch (Exception e) {
       log.debug("When update", e);
       return null;

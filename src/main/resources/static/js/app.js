@@ -14,52 +14,35 @@ $(document).ready(
                     url: "/link",
                     data: $(this).serialize(),
                     success: function (msg) {
+                        devolver = "";
                         console.log(msg)
-                        $("#result").html(
+                        if (msg.qr != null) {
+                            devolver =
                             "<div class='alert alert-success lead'><a target='_blank' href='"
                             + msg.uri
                             + "'>"
-                            + msg.uri
-                            + "</a></div>"
-                            );
-                    },
-                    error: function () {
-                        $("#result").html(
-                            "<div class='alert alert-danger lead'>ERROR</div>");
-                    }
-                });
-            });
-        $("#shortenerQR").submit(
-            function (event) {
-                event.preventDefault();
-                $("#result").html(
-                    "<div class='alert alert-danger lead' style='display: none'></div>");
-                $("#resultQr").html(
-                    "<div class='alert alert-danger lead' style='display: none'></div>");
-                $("#result2").html(
-                    "<div class='alert alert-danger lead' style='display: none'></div>");
-                $.ajax({
-                    type: "POST",
-                    url: "/linkQR",
-                    data: $(this).serialize(),
-                    success: function (msg) {
-                        console.log(msg)
-                        $("#resultQr").html(
-                            "<img src=\"data:image/png;base64, " + msg.qr +"\" />"
+                            + msg.uri 
+                            + "</div>"
+    
                             + "<div class='alert alert-success lead'><a target='_blank' href='"
                             + "data:image/png;base64, " + msg.qr
                             + "'>"
                             + msg.uri+ ".png"
                             + "</a></div>"
-                            );
+                        } else {
+                            devolver = 
+                            "<div class='alert alert-success lead'><a target='_blank' href='"
+                            + msg.uri
+                            + "'>"
+                            + msg.uri
+                            + "</a></div>"
+                            
+                        }
+                        $("#result").html(devolver);
                     },
                     error: function () {
-                        $("#resultQr").html(
-                            "<div class='alert alert-danger lead'>ERROR "
-                            +
-                            msg
-                            +
-                            "</div>");
+                        $("#result").html(
+                            "<div class='alert alert-danger lead'>ERROR: URL de destino no valida todavia</div>");
                     }
                 });
             });
@@ -111,12 +94,12 @@ $(document).ready(
                     data: $(this).serialize(),
                     success: function (msg) {
                         console.log(msg)
+                        var s = JSON.stringify(msg);
+
                         $("#resultA").html(
-                            "<div class='alert alert-success lead'><a target='_blank' href='"
-                            + msg
-                            + "'>"
-                            + msg
-                            + "</a></div>"
+                            "<div class='alert alert-success lead'>"
+                            + s
+                            +" </div>"
                             );
                     },
                     error: function () {

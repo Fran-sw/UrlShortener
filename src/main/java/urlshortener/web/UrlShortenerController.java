@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import urlshortener.domain.ShortURL;
 import urlshortener.service.ClickService;
 import urlshortener.service.ShortURLService;
+import urlshortener.service.ServiceAgents;
+
 
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartException;
@@ -55,6 +57,9 @@ import java.util.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 public class UrlShortenerController {
 
@@ -62,14 +67,29 @@ public class UrlShortenerController {
 
   private final ClickService clickService;
 
-  // Function to trat USER AGENT
-  //private void user_agents_treatment(HttpServletRequest request){
-    //UserAgent u_agent = UserAgent.parseUserAgentString(request.getHeader("User-Agent"));
-  //}
+  private final ServiceAgents serviceAgents;
 
-  public UrlShortenerController(ShortURLService shortUrlService, ClickService clickService) {
+  private static final Logger log = LoggerFactory
+      .getLogger(ShortURLService.class);
+
+
+  public UrlShortenerController(ShortURLService shortUrlService, ClickService clickService, ServiceAgents serviceAgents) {
     this.shortUrlService = shortUrlService;
     this.clickService = clickService;
+    this.serviceAgents = serviceAgents;
+  }
+
+  private static String generateQRCodeImage(String uri,int width, int height)
+          throws WriterException, IOException {
+      QRCodeWriter qrCodeWriter = new QRCodeWriter();
+      BitMatrix bitMatrix = qrCodeWriter.encode(uri, BarcodeFormat.QR_CODE, width, height);
+      BufferedImage new_qr = MatrixToImageWriter.toBufferedImage(bitMatrix);
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      ImageIO.write(new_qr,"png",bos);
+      byte[] qr_b = bos.toByteArray();
+      qr_b = Base64.getEncoder().encode(qr_b);
+      String qr = new String(qr_b);
+      return qr;
   }
 
   @RequestMapping(value = "/{id:(?!link|index).*}", method = RequestMethod.GET)
@@ -77,6 +97,7 @@ public class UrlShortenerController {
                                       HttpServletRequest request) {
     ShortURL l = shortUrlService.findByKey(id);
     if (l != null) {
+      //&& shortUrlService.checkReachable(l.getUri().toString())
       clickService.saveClick(id, extractIP(request));
       return createSuccessfulRedirectToResponse(l);
     } else {
@@ -88,22 +109,39 @@ public class UrlShortenerController {
   public ResponseEntity<ShortURL> shortener(@RequestParam("url") String url,
                                             @RequestParam(value = "sponsor", required = false)
                                             String sponsor,
-                                            @RequestHeader(value = "User-Agent") String userAgent,
+                                            @RequestHeader(value = "User-Agent", required = false) String userAgent,
+                                            @RequestParam(value = "qr", required = false) String checkboxValue,
                                             HttpServletRequest request) {
     UrlValidator urlValidator = new UrlValidator(new String[] {"http",
         "https"});
     //We get user agants
-    shortUrlService.processAgents(userAgent);
+    if(userAgent != null && !userAgent.equals("")){
+      serviceAgents.processAgents(userAgent);
+      //log.info("User agents es {}",userAgent);
+    }
+
     if (urlValidator.isValid(url)) {
       ShortURL su = shortUrlService.save(url, sponsor, request.getRemoteAddr());
       HttpHeaders h = new HttpHeaders();
       h.setLocation(su.getUri());
-      if(!shortUrlService.checkReachable(su.getUri().toString())){
+      if(!shortUrlService.checkReachable(su.getTarget().toString())){
         su = shortUrlService.mark(su,false);
       }
       else{
         su = shortUrlService.mark(su,true);
       }
+
+      if (checkboxValue != null){
+        try {
+          String qr = generateQRCodeImage(su.getUri().toString(),250,250);
+          su.setQr(qr);
+        } catch (WriterException e) {
+            System.out.println("Could not generate QR Code, WriterException :: " + e.getMessage());
+        } catch (IOException e) {
+          System.out.println("Could not generate QR Code, IOException :: " + e.getMessage());
+        }
+      }
+      log.info("TENGO hash: {}",su.getHash());
       return new ResponseEntity<>(su, h, HttpStatus.CREATED);
     } else {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

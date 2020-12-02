@@ -1,6 +1,8 @@
 package urlshortener.fixtures;
 
 import urlshortener.domain.ShortURL;
+import java.net.URI;
+
 
 public class ShortURLFixture {
 
@@ -42,5 +44,21 @@ public class ShortURLFixture {
   public static ShortURL someUrl() {
     return new ShortURL("someKey", "http://example.com/", null, null, null,
         null, 307, true, null, null,null);
+  }
+
+  public static ShortURL shortURL1() {
+    try{
+      URI uri = new URI("http://localhost/f684a3c4");
+      return new ShortURL("f684a3c4", "http://example.com/", uri, null, null,
+      null, null, true, "127.0.0.1", null,null);
+    }
+   catch (Exception e) {
+      return null;
+    }
+  }
+
+  public static ShortURL shortURL2() {
+    return new ShortURL("6", "http://example.com/", null, null, null,
+        null, null, false, "127.0.0.1", null,null);
   }
 }

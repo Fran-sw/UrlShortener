@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import urlshortener.domain.ShortURL;
 import urlshortener.service.ClickService;
-import urlshortener.service.ShortURLService;
+import urlshortener.service.ServiceAgents;
 
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartException;
@@ -38,21 +38,21 @@ import java.util.*;
 @RestController
 public class UrlShortenerAgentsController {
 
-  private final ShortURLService shortUrlService;
+  private final ServiceAgents serviceAgents;
 
   private final ClickService clickService;
 
-  public UrlShortenerAgentsController(ShortURLService shortUrlService, ClickService clickService) {
-    this.shortUrlService = shortUrlService;
+  public UrlShortenerAgentsController(ServiceAgents serviceAgents, ClickService clickService) {
+    this.serviceAgents = serviceAgents;
     this.clickService = clickService;   
   }
 
  
   @RequestMapping(value = "/agentsInfo", method = RequestMethod.GET)
-  public ResponseEntity<String> agentsInfo(@RequestHeader(value = "User-Agent") String userAgent) {
+  public ResponseEntity<Map<String, Integer>> agentsInfo(@RequestHeader(value = "User-Agent") String userAgent) {
     HttpHeaders h = new HttpHeaders();
-    shortUrlService.processAgents(userAgent);
-    String res = shortUrlService.getAgentsInfo();
+    serviceAgents.processAgents(userAgent);
+    Map<String, Integer> res = serviceAgents.getAgentsInfo();
     return new ResponseEntity<>(res, h, HttpStatus.OK);
   }
 }
