@@ -94,8 +94,16 @@ public class UrlShortenerController {
 
   @RequestMapping(value = "/{id:(?!link|index).*}", method = RequestMethod.GET)
   public ResponseEntity<?> redirectTo(@PathVariable String id,
+                                      @RequestHeader(value = "User-Agent", required = false) String userAgent,
                                       HttpServletRequest request) {
+                                        
     ShortURL l = shortUrlService.findByKey(id);
+
+    //We get user agants
+    if(userAgent != null && !userAgent.equals("")){
+      serviceAgents.processAgents(userAgent);
+    }
+
     if (l != null) {
       //&& shortUrlService.checkReachable(l.getUri().toString())
       clickService.saveClick(id, extractIP(request));
@@ -114,21 +122,19 @@ public class UrlShortenerController {
                                             HttpServletRequest request) {
     UrlValidator urlValidator = new UrlValidator(new String[] {"http",
         "https"});
-    //We get user agants
-    if(userAgent != null && !userAgent.equals("")){
-      serviceAgents.processAgents(userAgent);
-      //log.info("User agents es {}",userAgent);
-    }
 
     if (urlValidator.isValid(url)) {
       ShortURL su = shortUrlService.save(url, sponsor, request.getRemoteAddr());
       HttpHeaders h = new HttpHeaders();
+      HttpStatus reachableHeaders = null;
       h.setLocation(su.getUri());
       if(!shortUrlService.checkReachable(su.getTarget().toString())){
         su = shortUrlService.mark(su,false);
+        reachableHeaders = HttpStatus.BAD_REQUEST;
       }
       else{
         su = shortUrlService.mark(su,true);
+        reachableHeaders = HttpStatus.CREATED;
       }
 
       if (checkboxValue != null){
@@ -142,7 +148,7 @@ public class UrlShortenerController {
         }
       }
       log.info("TENGO hash: {}",su.getHash());
-      return new ResponseEntity<>(su, h, HttpStatus.CREATED);
+      return new ResponseEntity<>(su, h, reachableHeaders);
     } else {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }

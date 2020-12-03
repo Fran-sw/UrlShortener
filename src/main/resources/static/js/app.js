@@ -42,7 +42,7 @@ $(document).ready(
                     },
                     error: function () {
                         $("#result").html(
-                            "<div class='alert alert-danger lead'>ERROR: URL de destino no valida todavia</div>");
+                            "<div class='alert alert-danger lead'>ERROR: URL de destino no valida o no alcanzable</div>");
                     }
                 });
             });
@@ -65,7 +65,7 @@ $(document).ready(
                     contentType: false,
                     data: data,
                     success: function (msg) {
-                        var blob = new Blob([msg],{type:'text/plain'});
+                        var blob = new Blob([msg],{type:'text/csv'});
                         var link = document.createElement('a');
                         link.href = window.URL.createObjectURL(blob);
                         link.download="shortened.csv";
