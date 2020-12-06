@@ -177,6 +177,8 @@ public class UrlShortenerController {
         if (!shortUrlService.existShortURLByUri(su.getHash())){ //Si no existe se genera
           generarQR(su);
         }
+      } else {
+        su.setQrUrl("");
       }
       log.info("TENGO hash: {}",su.getHash());
       log.info("TENGO QrUrl: {}",su.getQrUrl());

@@ -16,7 +16,7 @@ $(document).ready(
                     success: function (msg) {
                         devolver = "";
                         console.log(msg)
-                        if (msg.qrUrl != null) {
+                        if (msg.qrUrl != "") {
                             devolver =
                             "<div class='alert alert-success lead'><a target='_blank' href='"
                             + msg.uri
