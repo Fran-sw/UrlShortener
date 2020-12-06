@@ -42,7 +42,7 @@ $(document).ready(
                     },
                     error: function () {
                         $("#result").html(
-                            "<div class='alert alert-danger lead'>ERROR: URL de destino no valida todavia</div>");
+                            "<div class='alert alert-danger lead'>ERROR: URL de destino no valida</div>");
                     }
                 });
             });
