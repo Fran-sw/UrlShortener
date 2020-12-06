@@ -24,7 +24,8 @@ public class ShortURLRepositoryImpl implements ShortURLRepository {
           null, rs.getString("sponsor"), rs.getDate("created"),
           rs.getString("owner"), rs.getInt("mode"),
           rs.getBoolean("safe"), rs.getString("ip"),
-          rs.getString("country"),rs.getString("qr"));
+          rs.getString("country"),rs.getString("qr"),
+          rs.getString("qrUrl"));
 
   private final JdbcTemplate jdbc;
 
@@ -46,10 +47,10 @@ public class ShortURLRepositoryImpl implements ShortURLRepository {
   @Override
   public ShortURL save(ShortURL su) {
     try {
-      jdbc.update("INSERT INTO shorturl VALUES (?,?,?,?,?,?,?,?,?,?)",
+      jdbc.update("INSERT INTO shorturl VALUES (?,?,?,?,?,?,?,?,?,?,?)",
           su.getHash(), su.getTarget(), su.getSponsor(),
           su.getCreated(), su.getOwner(), su.getMode(), su.getSafe(),
-          su.getIP(), su.getCountry(),su.getQr());
+          su.getIP(), su.getCountry(),su.getQr(), "localhost:8080/qr/"+su.getHash());
     } catch (DuplicateKeyException e) {
       log.debug("When insert for key {}", su.getHash(), e);
       return su;
@@ -67,11 +68,38 @@ public class ShortURLRepositoryImpl implements ShortURLRepository {
      return new ShortURL(
         su.getHash(), su.getTarget(), su.getUri(), su.getSponsor(),
         su.getCreated(), su.getOwner(), su.getMode(), safeness,
-        su.getIP(), su.getCountry(), su.getQr()
+        su.getIP(), su.getCountry(), su.getQr(), su.getQrUrl()
      );
     } catch (Exception e) {
       log.debug("When update", e);
       return null;
+    }
+  }
+
+  @Override
+  public boolean existShortURLByUri(String uri){
+    try {
+      List<ShortURL> query = jdbc.query("SELECT * FROM shorturl WHERE hash = ?", new Object[] {uri}, rowMapper);
+      if (query.size() == 0){
+        return false;
+      }
+      ShortURL aux = query.get(0);
+      if(aux.getQr() == null){
+        return false;
+      }
+      return true;
+    } catch (Exception e) {
+      log.debug("When update", e);
+      return false;
+    }
+  }
+
+  @Override
+  public void setQr(ShortURL su, String newQr) {
+    try {
+     jdbc.update("UPDATE shorturl SET qr=? WHERE hash=?", newQr, su.getHash());
+    } catch (Exception e) {
+      log.debug("When update", e);
     }
   }
 
@@ -82,7 +110,7 @@ public class ShortURLRepositoryImpl implements ShortURLRepository {
           "update shorturl set target=?, sponsor=?, created=?, owner=?, mode=?, safe=?, ip=?, country=?, qr=? where hash=?",
           su.getTarget(), su.getSponsor(), su.getCreated(),
           su.getOwner(), su.getMode(), su.getSafe(), su.getIP(),
-          su.getCountry(),su.getQr(), su.getHash());
+          su.getCountry(),su.getQr(), su.getHash(), su.getQrUrl());
     } catch (Exception e) {
       log.debug("When update for hash {}", su.getHash(), e);
     }

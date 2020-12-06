@@ -16,7 +16,7 @@ $(document).ready(
                     success: function (msg) {
                         devolver = "";
                         console.log(msg)
-                        if (msg.qr != null) {
+                        if (msg.qrUrl != null) {
                             devolver =
                             "<div class='alert alert-success lead'><a target='_blank' href='"
                             + msg.uri
@@ -25,9 +25,9 @@ $(document).ready(
                             + "</div>"
     
                             + "<div class='alert alert-success lead'><a target='_blank' href='"
-                            + "data:image/png;base64, " + msg.qr
+                            + msg.qrUrl
                             + "'>"
-                            + msg.uri+ ".png"
+                            + msg.qrUrl 
                             + "</a></div>"
                         } else {
                             devolver = 
@@ -42,7 +42,7 @@ $(document).ready(
                     },
                     error: function () {
                         $("#result").html(
-                            "<div class='alert alert-danger lead'>ERROR: URL de destino no valida o no alcanzable</div>");
+                            "<div class='alert alert-danger lead'>ERROR: URL de destino no valida todavia</div>");
                     }
                 });
             });

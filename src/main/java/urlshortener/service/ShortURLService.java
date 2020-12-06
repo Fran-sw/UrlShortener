@@ -34,7 +34,7 @@ public class ShortURLService {
   public ShortURL save(String url, String sponsor, String ip) {
     ShortURL su = ShortURLBuilder.newInstance()
         .target(url)
-        .uri((String hash) -> linkTo(methodOn(UrlShortenerController.class).redirectTo(hash, null,null))
+        .uri((String hash) -> linkTo(methodOn(UrlShortenerController.class).redirectTo(hash, null, null))
             .toUri())
         .sponsor(sponsor)
         .createdNow()
@@ -44,12 +44,25 @@ public class ShortURLService {
         .ip(ip)
         .unknownCountry()
         .qr()
+        .qrUrl()
         .build();
     return shortURLRepository.save(su);
   }
 
   public ShortURL mark(ShortURL url, boolean safeness){
     return shortURLRepository.mark(url,safeness);
+  }
+
+  public boolean existShortURLByUri(String uri){
+    return shortURLRepository.existShortURLByUri(uri);
+  }
+
+  public void setQr(ShortURL urlSafe, String newQr){
+        shortURLRepository.setQr(urlSafe, newQr);
+  }
+
+  public String getQrcode(String hash){
+    return shortURLRepository.findByKey(hash).getQr();
   }
 
   //Function to check if an url is reachable
