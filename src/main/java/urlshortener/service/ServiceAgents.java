@@ -17,6 +17,12 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
 @Service
 public class ServiceAgents {
     private static final Logger log = LoggerFactory
@@ -35,7 +41,9 @@ public class ServiceAgents {
         this.infoUserAgents = new HashMap<String, Integer>();
     }
 
+    @Async
     public void processAgents(String userAgent){
+      log.info("Execute Agents method asynchronously.Thread name: " + Thread.currentThread().getName());
         Capabilities capabilities = userAgentParser.parse(userAgent);
         String browser = capabilities.getBrowser();
         String os = capabilities.getPlatform();

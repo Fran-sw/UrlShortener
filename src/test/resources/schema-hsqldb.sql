@@ -16,7 +16,8 @@ CREATE TABLE SHORTURL
     SAFE    BOOLEAN,                 -- Safe target
     IP      VARCHAR(20),             -- IP
     COUNTRY VARCHAR(50),              -- Country
-    QR      VARCHAR(1024)              
+    QR      VARCHAR(2048),
+    QRURL  VARCHAR(512)             -- Qr link
 );
 
 -- Click

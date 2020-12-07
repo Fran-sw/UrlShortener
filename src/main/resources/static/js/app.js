@@ -9,14 +9,14 @@ $(document).ready(
                     "<div class='alert alert-danger lead' style='display: none'></div>");
                 $("#result2").html(
                     "<div class='alert alert-danger lead' style='display: none'></div>");
-                $.ajax({
+                $.ajax({ 
                     type: "POST",
                     url: "/link",
                     data: $(this).serialize(),
                     success: function (msg) {
                         devolver = "";
                         console.log(msg)
-                        if (msg.qr != null) {
+                        if (msg.qrUrl != null) {
                             devolver =
                             "<div class='alert alert-success lead'><a target='_blank' href='"
                             + msg.uri
@@ -25,9 +25,9 @@ $(document).ready(
                             + "</div>"
     
                             + "<div class='alert alert-success lead'><a target='_blank' href='"
-                            + "data:image/png;base64, " + msg.qr
+                            + msg.qrUrl
                             + "'>"
-                            + msg.uri+ ".png"
+                            + msg.qrUrl 
                             + "</a></div>"
                         } else {
                             devolver = 
@@ -42,7 +42,7 @@ $(document).ready(
                     },
                     error: function () {
                         $("#result").html(
-                            "<div class='alert alert-danger lead'>ERROR: URL de destino no valida todavia</div>");
+                            "<div class='alert alert-danger lead'>ERROR: URL de destino no valida</div>");
                     }
                 });
             });
@@ -65,7 +65,7 @@ $(document).ready(
                     contentType: false,
                     data: data,
                     success: function (msg) {
-                        var blob = new Blob([msg],{type:'text/plain'});
+                        var blob = new Blob([msg],{type:'text/csv'});
                         var link = document.createElement('a');
                         link.href = window.URL.createObjectURL(blob);
                         link.download="shortened.csv";

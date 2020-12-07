@@ -17,11 +17,12 @@ public class ShortURL {
   private String country;
 
   private String qr;
+  private String qrUrl;
 
 
   public ShortURL(String hash, String target, URI uri, String sponsor,
                   Date created, String owner, Integer mode, Boolean safe, String ip,
-                  String country,String qr) {
+                  String country,String qr, String qrUrl) {
     this.hash = hash;
     this.target = target;
     this.uri = uri;
@@ -33,6 +34,7 @@ public class ShortURL {
     this.ip = ip;
     this.country = country;
     this.qr = qr;
+    this.qrUrl = qrUrl;
   }
 
   public ShortURL() {
@@ -124,5 +126,13 @@ public class ShortURL {
 
   public void setQr(String newQr) {
     this.qr = newQr;
+  }
+
+  public String getQrUrl(){
+    return qrUrl;
+  }
+
+  public void setQrUrl(String newQrUrl) {
+    this.qrUrl = newQrUrl;
   }
 }

@@ -12,6 +12,10 @@ public interface ShortURLRepository {
   ShortURL save(ShortURL su);
 
   ShortURL mark(ShortURL urlSafe, boolean safeness);
+  
+  boolean existShortURLByUri(String uri);
+
+  void setQr(ShortURL urlSafe, String newQr);
 
   void update(ShortURL su);
 
