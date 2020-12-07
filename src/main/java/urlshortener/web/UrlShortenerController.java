@@ -178,7 +178,7 @@ public class UrlShortenerController {
           generarQR(su);
         }
       } else {
-        su.setQrUrl("");
+        su.setQrUrl(null);
       } 
       log.info("TENGO hash: {}",su.getHash());
       log.info("TENGO QrUrl: {}",su.getQrUrl());
