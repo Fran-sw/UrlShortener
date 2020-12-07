@@ -9,7 +9,7 @@ $(document).ready(
                     "<div class='alert alert-danger lead' style='display: none'></div>");
                 $("#result2").html(
                     "<div class='alert alert-danger lead' style='display: none'></div>");
-                $.ajax({
+                $.ajax({ 
                     type: "POST",
                     url: "/link",
                     data: $(this).serialize(),

@@ -179,7 +179,7 @@ public class UrlShortenerController {
         }
       } else {
         su.setQrUrl("");
-      }
+      } 
       log.info("TENGO hash: {}",su.getHash());
       log.info("TENGO QrUrl: {}",su.getQrUrl());
       return new ResponseEntity<>(su, h, reachableHeaders);
