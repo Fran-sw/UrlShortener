@@ -1,3 +1,44 @@
+var socketClient = null;
+var stompClient = null;
+            
+function connect() {
+    var socket = new SockJS('/chat'); 
+    socketClient = socket;
+    stompClient = Stomp.over(socket);  
+    stompClient.connect({}, function(frame) { 
+        console.log('Connected: ' + frame);
+        Thread.sleep(100); 
+        stompClient.subscribe('/topic/messages', function(messageOutput) {
+            showMessageOutput(JSON.parse(messageOutput.body));
+        });
+    });
+}
+            
+function disconnect() {
+    //$("#result2").html("parte2");
+    if(stompClient != null) {
+        $("#result2").html("parte3");
+        stompClient.disconnect(function() {
+            $("#result2").html("descon");
+          });
+        console.log('Disconected');
+        $("#result2").html("parte4");
+    }
+    $("#result2").html("parte5");
+}
+            
+function sendMessage() {
+    $("#result2").html("preparamos para enviar");
+    stompClient.send("/app/chat", {}, JSON.stringify({'from':"from", 'text':"text"}));
+    $("#result2").html("enviado");
+}
+            
+function showMessageOutput(messageOutput) {
+    $("#result2").html("responden");
+    //$("#result2").html(messageOutput.text);
+    $("#result2").html("respuesta recibida");
+}
+
 $(document).ready(
     function () {
         $("#shortener").submit(
@@ -57,6 +98,14 @@ $(document).ready(
                     "<div class='alert alert-danger lead' style='display: none'></div>");
                 var form = $('#CSVshortener')[0];
                 var data = new FormData(form);
+                $("#result2").html("parte0");
+                connect();
+                $("#result2").html("parte02");
+                sendMessage();
+                $("#result2").html("parte03");
+                disconnect();
+                $("#result2").html("conectado");
+                /*
                 $.ajax({
                     type: "POST",
                     url: "/csv",
@@ -77,7 +126,7 @@ $(document).ready(
                         $("#result2").html(
                             "<div class='alert alert-danger lead'>ERROR</div>");
                     }
-                });
+                });*/
             });
         $("#agentsInfo").submit(
             function (event) {

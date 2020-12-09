@@ -18,6 +18,12 @@ import urlshortener.service.ClickService;
 import urlshortener.service.ShortURLService;
 import urlshortener.service.ServiceAgents;
 
+//Websocket
+import urlshortener.service.Message;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.util.HtmlUtils;
 
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartException;
@@ -72,6 +78,14 @@ public class UrlShortenerCVSController {
 
   private final ServiceAgents serviceAgents;
 
+
+  @MessageMapping("/app/chat")
+  @SendTo("/topic/messages")
+  public Message send(Message message) throws Exception {
+      return new Message(message.getFrom(),"respuest");
+  }
+
+
   public UrlShortenerCVSController(ShortURLService shortUrlService, ClickService clickService,ServiceAgents serviceAgents) {
     this.shortUrlService = shortUrlService;
     this.clickService = clickService;
@@ -93,85 +107,65 @@ public class UrlShortenerCVSController {
     log.info("Error while reading file");
   }
 
-//Function to shorten al urls in a csv file
-@RequestMapping(value = "/csv", method = RequestMethod.POST, produces= MediaType.TEXT_PLAIN_VALUE)
-public ResponseEntity<String> generateShortenedCSV( @RequestHeader(value = "User-Agent") String userAgent, @RequestParam("csv") MultipartFile csv, @RequestParam(value = "sponsor", required = false) String sponsor,HttpServletRequest request)
-  throws IOException{
+  //Function to shorten al urls in a csv file
+  @RequestMapping(value = "/csv", method = RequestMethod.POST, produces= MediaType.TEXT_PLAIN_VALUE)
+  public ResponseEntity<String> generateShortenedCSV( @RequestHeader(value = "User-Agent") String userAgent, @RequestParam("csv") MultipartFile csv, @RequestParam(value = "sponsor", required = false) String sponsor,HttpServletRequest request)
+    throws IOException{
 
-    if (csv.getOriginalFilename().length()>1) { //Hay fichero, sino es una petición vacía
-    InputStream is = csv.getInputStream();
-    BufferedReader br = new BufferedReader(new InputStreamReader(is));
-    StringWriter csvWriter = new StringWriter();
-      
-    Boolean createdHeaders=false;
-    HttpHeaders h = new HttpHeaders();
+      if (csv.getOriginalFilename().length()>1) { //Hay fichero, sino es una petición vacía
+      InputStream is = csv.getInputStream();
+      BufferedReader br = new BufferedReader(new InputStreamReader(is));
+      StringWriter csvWriter = new StringWriter();
+        
+      Boolean createdHeaders=false;
+      HttpHeaders h = new HttpHeaders();
 
-    String line;
-    while ((line = br.readLine()) != null) {
-      if(shortUrlService.checkReachable(line)){
-        if(!createdHeaders){
-          ShortURL shorturl = shortenerFirstCSV(line, sponsor, request);
-          if (shorturl.getSafe()){
-            csvWriter.write(line+";true;"+shorturl.getUri().toString()+";\n");
-            h.setLocation(shorturl.getUri());
-            createdHeaders=true;
+      String line;
+      while ((line = br.readLine()) != null) {
+        if(shortUrlService.checkReachable(line)){
+          if(!createdHeaders){
+            ShortURL shorturl = shortenerCSV(line, sponsor, request);
+            if (shorturl.getSafe()){
+              csvWriter.write(line+";true;"+shorturl.getUri().toString()+";\n");
+              h.setLocation(shorturl.getUri());
+              createdHeaders=true;
+            }else{
+              csvWriter.write(line+";false;La url no es alcanzable\n"); 
+            }
           }else{
-            csvWriter.write(line+";false;\n"); 
+            ShortURL shorturl = shortenerCSV(line, sponsor, request);
+            if (shorturl.getSafe()){
+              csvWriter.write(line+";true;"+shorturl.getUri().toString()+";\n");
+            }else{
+              csvWriter.write(line+";false;La url no es alcanzable\n"); 
+            }
           }
         }else{
-          String shortLine = shortenerCSV(line, sponsor, request);
-          if (shortLine!="ERROR"){
-            csvWriter.write(line+";true;"+shortLine+";\n");
-          }else{
-            csvWriter.write(line+";false;\n"); 
-          }
+          csvWriter.write(line+";false;La url no es alcanzable\n"); 
         }
-      }else{
-        csvWriter.write(line+";false;\n"); 
       }
+      
+      if(csvWriter.toString().length()>1 && createdHeaders){
+        return new ResponseEntity<>(csvWriter.toString(),h,HttpStatus.CREATED);
+      }else if(csvWriter.toString().length()>1){
+        return new ResponseEntity<>(csvWriter.toString(),HttpStatus.CREATED);
+      }else{
+        return new ResponseEntity<>("Empty file",HttpStatus.NOT_FOUND);
+      }
+    } else {
+      return new ResponseEntity<>("There was no file",HttpStatus.NOT_FOUND);
     }
-    
-    if(csvWriter.toString().length()>1 && createdHeaders){
-      return new ResponseEntity<>(csvWriter.toString(),h,HttpStatus.CREATED);
-    }else if(csvWriter.toString().length()>1){
-      return new ResponseEntity<>(csvWriter.toString(),HttpStatus.CREATED);
-    }else{
-      return new ResponseEntity<>("Empty file",HttpStatus.NOT_FOUND);
-    }
-  } else {
-    return new ResponseEntity<>("There was no file",HttpStatus.NOT_FOUND);
   }
-}
 
-public ShortURL shortenerFirstCSV(String url,String sponsor,HttpServletRequest request) {
-  UrlValidator urlValidator = new UrlValidator(new String[] {"http","https"});
-  ShortURL su = shortUrlService.save(url, sponsor, request.getRemoteAddr());
-  if (urlValidator.isValid(url)) {
-    if(shortUrlService.checkReachable(su.getTarget().toString())){
+  public ShortURL shortenerCSV(String url,String sponsor,HttpServletRequest request) {
+    UrlValidator urlValidator = new UrlValidator(new String[] {"http","https"});
+    ShortURL su = shortUrlService.save(url, sponsor, request.getRemoteAddr());
+    if (urlValidator.isValid(url) && shortUrlService.checkReachable(su.getTarget().toString())) {
       su = shortUrlService.mark(su,true);
+      return su;
     }else{
       su = shortUrlService.mark(su,false);
-    }
-    return su;
-  }else{
-    su = shortUrlService.mark(su,false);
-    return su;
-  }
-}
-
-public String shortenerCSV(String url,String sponsor,HttpServletRequest request) {
-    UrlValidator urlValidator = new UrlValidator(new String[] {"http","https"});
-    if (urlValidator.isValid(url)) {
-      ShortURL su = shortUrlService.save(url, sponsor, request.getRemoteAddr());
-      if(!shortUrlService.checkReachable(su.getTarget().toString())){
-        su = shortUrlService.mark(su,false);
-      }
-      else{
-        su = shortUrlService.mark(su,true);
-      }
-      return su.getUri().toString();
-    } else {
-      return "ERROR";
+      return su;
     }
   }
 }
