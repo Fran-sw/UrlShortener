@@ -15,16 +15,14 @@ function connect() {
 }
             
 function disconnect() {
-    //$("#result2").html("parte2");
+    $("#result2").html("Entra en disconnect");
     if(stompClient != null) {
-        $("#result2").html("parte3");
-        stompClient.disconnect(function() {
-            $("#result2").html("descon");
-          });
+        $("#result2").html("Tenemos un cliente que desconectar");
+        stompClient.disconnect();
         console.log('Disconected');
-        $("#result2").html("parte4");
+        $("#result2").html("Hemos desconectado al cliente");
     }
-    $("#result2").html("parte5");
+    $("#result2").html("Acabamos la función de desconectar");
 }
             
 function sendMessage() {
@@ -35,8 +33,7 @@ function sendMessage() {
             
 function showMessageOutput(messageOutput) {
     $("#result2").html("responden");
-    //$("#result2").html(messageOutput.text);
-    $("#result2").html("respuesta recibida");
+    $("#result2").html(messageOutput.text);
 }
 
 $(document).ready(
@@ -98,13 +95,13 @@ $(document).ready(
                     "<div class='alert alert-danger lead' style='display: none'></div>");
                 var form = $('#CSVshortener')[0];
                 var data = new FormData(form);
-                $("#result2").html("parte0");
+                $("#result2").html("Paso 1");
                 connect();
-                $("#result2").html("parte02");
+                $("#result2").html("Paso 2");
                 sendMessage();
-                $("#result2").html("parte03");
+                $("#result2").html("Paso 3");
                 disconnect();
-                $("#result2").html("conectado");
+                $("#result2").html("Funciona");
                 /*
                 $.ajax({
                     type: "POST",

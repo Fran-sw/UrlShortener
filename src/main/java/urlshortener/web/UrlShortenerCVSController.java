@@ -78,13 +78,11 @@ public class UrlShortenerCVSController {
 
   private final ServiceAgents serviceAgents;
 
-
-  @MessageMapping("/app/chat")
+  @MessageMapping("/chat")
   @SendTo("/topic/messages")
   public Message send(Message message) throws Exception {
       return new Message(message.getFrom(),"respuest");
   }
-
 
   public UrlShortenerCVSController(ShortURLService shortUrlService, ClickService clickService,ServiceAgents serviceAgents) {
     this.shortUrlService = shortUrlService;
