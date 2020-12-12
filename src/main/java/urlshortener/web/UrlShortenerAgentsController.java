@@ -53,6 +53,8 @@ public class UrlShortenerAgentsController {
     HttpHeaders h = new HttpHeaders();
     //serviceAgents.processAgents(userAgent);
     Map<String, Integer> res = serviceAgents.getAgentsInfo();
+    serviceAgents.calculateTop5();
+
     return new ResponseEntity<>(res, h, HttpStatus.OK);
   }
 }
