@@ -73,9 +73,9 @@ public class UrlShortenerTests {
   public void thatShortenerCreatesARedirectIfTheURLisOK() throws Exception {
     configureSave(null);
     //when(shortUrlService.save("http://example.com/",null,"127.0.0.1")).thenReturn(shortURL1());
-    //when(shortUrlService.checkReachable(any(String.class)).thenReturn("true"));
+    when(shortUrlService.checkReachable(any())).thenReturn(true);
     //when(shortUrlService.checkReachable("http://example.com/")).thenReturn(true);
-    //when(shortUrlService.mark(any(),any()).thenReturn(shortURL2()));
+    when(shortUrlService.mark(any(),any())).thenReturn(shortURL1());
     //when(shortUrlService.mark(shortURL1(),false)).thenReturn(shortURL2());
 
     mockMvc.perform(post("/link").param("url", "http://example.com/"))

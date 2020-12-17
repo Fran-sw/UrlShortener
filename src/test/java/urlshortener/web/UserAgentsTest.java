@@ -29,6 +29,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import urlshortener.domain.ShortURL;
 import urlshortener.service.ClickService;
 import urlshortener.service.ShortURLService;
+import urlshortener.service.ServiceAgents;
+
+import java.util.*;
+
 
 public class UserAgentsTest {
 
@@ -40,22 +44,51 @@ public class UserAgentsTest {
   @Mock
   private ShortURLService shortUrlService;
 
+  @Mock
+  private ServiceAgents serviceAgents;
+
   @InjectMocks
-  private UrlShortenerController urlShortener;
+  private UrlShortenerAgentsController userAgents;
 
   @Before
   public void setup() {
     MockitoAnnotations.initMocks(this);
-    this.mockMvc = MockMvcBuilders.standaloneSetup(urlShortener).build();
+    this.mockMvc = MockMvcBuilders.standaloneSetup(userAgents).build();
   }
 
   @Test
   @Ignore
-  public void thatThereIsNoCountOnPost()
+  public void userAgentsTest()
       throws Exception {
-    mockMvc.perform(
-        post("/link").param("url", "http://example.com/").param(
-        "sponsor", "http://sponsor.com/"))
-        .andDo(print());
+        when(serviceAgents.getAgentsInfo()).thenReturn(createMap());
+
+        // SHOULD THERE BE AN OTHER OK FOR URLSERIE? -> maybe they share a lot with shortener test????
+        // Index.html shows that might be the case
+
+        // We post an url -> there should not be a count on user agents
+        mockMvc.perform(
+          post("/link").param("url", "http://example.com/").param(
+          "sponsor", "http://sponsor.com/"))
+          .andDo(print());
+
+        // We perfom a get to the just created url -> it will start a count of user agents
+        mockMvc.perform(
+          get("/f684a3c4"))
+          .andDo(print());
+
+        // There will be 5 sec delay between each calculation of the top5 useragents
+        Thread.sleep(5000);
+
+        // We need to get the user agents
+        mockMvc.perform(
+          get("/agentsInfo"))
+          .andDo(print());
+      
+  }
+  private Map<String,Integer> createMap(){
+    Map<String, Integer> m = new HashMap<String, Integer>();
+    m.put("Win10",1);
+    m.put("Chrome", 1);
+    return m;
   }
 }
