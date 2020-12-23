@@ -15,6 +15,15 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
 
 
 @Service
@@ -22,6 +31,9 @@ public class ShortURLService {
   
 
   private final ShortURLRepository shortURLRepository;
+
+  private static final Logger log = LoggerFactory
+      .getLogger(ShortURLService.class);
 
   public ShortURLService(ShortURLRepository shortURLRepository) {
     this.shortURLRepository = shortURLRepository;
@@ -66,7 +78,10 @@ public class ShortURLService {
   }
 
   //Function to check if an url is reachable
+  //@Async
   public boolean checkReachable(String shortUri){
+    //log.info("Execute checkReachable method asynchronously.Thread name: " 
+    //+ Thread.currentThread().getName());
     try{
       URL url = new URL(shortUri);
       HttpURLConnection huc = (HttpURLConnection) url.openConnection();

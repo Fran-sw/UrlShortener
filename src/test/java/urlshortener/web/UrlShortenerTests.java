@@ -3,6 +3,7 @@ package urlshortener.web;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -26,6 +27,8 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.EscapedErrors;
+
 import urlshortener.domain.ShortURL;
 import urlshortener.service.ClickService;
 import urlshortener.service.ShortURLService;
@@ -69,12 +72,10 @@ public class UrlShortenerTests {
   }
 
   @Test
-  @Ignore
   public void thatShortenerCreatesARedirectIfTheURLisOK() throws Exception {
     configureSave(null);
-    when(shortUrlService.save("http://example.com/",null,"127.0.0.1")).thenReturn(shortURL1());
-    when(shortUrlService.checkReachable("http://example.com/")).thenReturn(true);
-    when(shortUrlService.mark(shortURL1(),false)).thenReturn(shortURL2());
+    when(shortUrlService.checkReachable(any())).thenReturn(true);
+    when(shortUrlService.mark(any(),anyBoolean())).thenReturn(shortURL1());
 
     mockMvc.perform(post("/link").param("url", "http://example.com/"))
         .andDo(print())
@@ -87,9 +88,10 @@ public class UrlShortenerTests {
   }
 
   @Test
-  @Ignore
   public void thatShortenerCreatesARedirectWithSponsor() throws Exception {
     configureSave("http://sponsor.com/");
+    when(shortUrlService.checkReachable(any())).thenReturn(true);
+    when(shortUrlService.mark(any(),anyBoolean())).thenReturn(shortURL2());
 
     mockMvc.perform(
         post("/link").param("url", "http://example.com/").param(
@@ -119,6 +121,7 @@ public class UrlShortenerTests {
     mockMvc.perform(post("/link").param("url", "someKey")).andDo(print())
         .andExpect(status().isBadRequest());
   }
+  
 
   private void configureSave(String sponsor) {
     when(shortUrlService.save(any(), any(), any()))

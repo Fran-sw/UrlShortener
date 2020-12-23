@@ -18,17 +18,25 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+@EnableAsync
+@EnableScheduling
 @Service
 public class ServiceAgents {
     private static final Logger log = LoggerFactory
     .getLogger(ShortURLService.class);
 
     Map<String, Integer> infoUserAgents;
+    Map<String, Integer> top5;
+    
     private UserAgentParser userAgentParser = null;
 
     public ServiceAgents() {    
@@ -39,6 +47,7 @@ public class ServiceAgents {
         catch(ParseException e){} 
     
         this.infoUserAgents = new HashMap<String, Integer>();
+        this.top5 = new HashMap<String, Integer>();
     }
 
     @Async
@@ -67,8 +76,37 @@ public class ServiceAgents {
         }
     }
 
+    @Async
+    @Scheduled(fixedDelay = 5000)
+    public void calculateTop5(){
+      log.info("Execute Calculate Top 5 method asynchronously.Thread name: " + Thread.currentThread().getName());
+      //try{ Thread.sleep(5000);} catch (InterruptedException e) {};
+      Map<String, Integer> aux = new HashMap<String, Integer>();
+      aux.putAll(infoUserAgents);
+      Map<String, Integer> aux_top =  new HashMap<String, Integer>();
+      
+      for(int i = 0; i < 5; i++){
+        if(aux.isEmpty()) break; 
+
+        String max_K = "";
+        int max_V = -1;
+        
+        for(Map.Entry<String,Integer> entry : aux.entrySet()){
+          if(entry.getValue() > max_V){
+            max_K = entry.getKey();
+            max_V = entry.getValue();
+          }
+        }
+        aux.remove(max_K);
+        aux_top.put(max_K, max_V);
+      }
+      top5.clear();
+      top5.putAll(aux_top);
+    }
+    
+
     public Map<String, Integer> getAgentsInfo(){
-        return infoUserAgents;
+        return top5;
     }
     
 }

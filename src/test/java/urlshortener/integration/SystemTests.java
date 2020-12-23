@@ -26,6 +26,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import org.junit.Ignore;
+
+
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @DirtiesContext
@@ -57,6 +60,7 @@ public class SystemTests {
   }
 
   @Test
+  @Ignore
   public void testCreateLink() throws Exception {
     ResponseEntity<String> entity = postLink("http://example.com/");
 
