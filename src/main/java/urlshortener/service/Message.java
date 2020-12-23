@@ -2,30 +2,30 @@ package urlshortener.service;
 
 public class Message {
 
-    private String from;
-    private String text;
+    private String content;
+    private String answer;
 
     public Message() {
     }
   
-    public Message(String Nfrom, String Ntext) {
-        this.from = Nfrom;
-        this.text = Ntext;
+    public Message(String Ncontent, String Nanswer) {
+        this.content = Ncontent;
+        this.answer = Nanswer;
     }
   
-    public String getFrom() {
-        return from;
-    }  
+    public String getContent() {
+        return content;
+    } 
 
-    public String getText() {
-      return text;
+    public String getAnswer() {
+      return answer;
     }
   
-    public void setFrom(String Nfrom) {
-      this.from = Nfrom;
+    public void setContent(String Ncontent) {
+      this.content = Ncontent;
     }
-  
-    public void setText(String Ntext) {
-      this.text = Ntext;
+    
+    public void setAnswer(String Nanswer) {
+      this.answer = Nanswer;
     }
 }

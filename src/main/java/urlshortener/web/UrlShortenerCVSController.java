@@ -25,6 +25,8 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.util.HtmlUtils;
 
+import org.springframework.scheduling.annotation.Async;
+
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -78,10 +80,19 @@ public class UrlShortenerCVSController {
 
   private final ServiceAgents serviceAgents;
 
+  
+  //@Async
   @MessageMapping("/chat")
   @SendTo("/topic/messages")
   public Message send(Message message) throws Exception {
-      return new Message(message.getFrom(),"respuest");
+    log.info("entra");
+    if (message.getContent().length()>0) {
+      log.info("Recibimos");
+      return new Message("TODO","respuesta");
+    }else{
+      log.info("fallo");
+      return new Message("TODO","respuesta");
+    }
   }
 
   public UrlShortenerCVSController(ShortURLService shortUrlService, ClickService clickService,ServiceAgents serviceAgents) {
@@ -106,6 +117,9 @@ public class UrlShortenerCVSController {
   }
 
   //Function to shorten al urls in a csv file
+  /*
+  @MessageMapping("/chat")
+  @SendTo("/topic/messages")
   @RequestMapping(value = "/csv", method = RequestMethod.POST, produces= MediaType.TEXT_PLAIN_VALUE)
   public ResponseEntity<String> generateShortenedCSV( @RequestHeader(value = "User-Agent") String userAgent, @RequestParam("csv") MultipartFile csv, @RequestParam(value = "sponsor", required = false) String sponsor,HttpServletRequest request)
     throws IOException{
@@ -153,7 +167,62 @@ public class UrlShortenerCVSController {
     } else {
       return new ResponseEntity<>("There was no file",HttpStatus.NOT_FOUND);
     }
-  }
+  }*/
+
+/*
+  @MessageMapping("/chat")
+  //@SendTo("/topic/messages")
+  @RequestMapping(value = "/csv", method = RequestMethod.POST, produces= MediaType.TEXT_PLAIN_VALUE)
+  public void generateShortenedCSV( @RequestHeader(value = "User-Agent") String userAgent, @RequestParam("csv") MultipartFile csv, @RequestParam(value = "sponsor", required = false) String sponsor,HttpServletRequest request)
+    throws IOException{
+      log.info("Empieza");
+
+      if (csv.getOriginalFilename().length()>1) { //Hay fichero, sino es una petición vacía
+      InputStream is = csv.getInputStream();
+      BufferedReader br = new BufferedReader(new InputStreamReader(is));
+      StringWriter csvWriter = new StringWriter();
+        
+      Boolean createdHeaders=false;
+      HttpHeaders h = new HttpHeaders();
+
+      String line;
+      while ((line = br.readLine()) != null) {
+        if(shortUrlService.checkReachable(line)){
+          if(!createdHeaders){
+            ShortURL shorturl = shortenerCSV(line, sponsor, request);
+            if (shorturl.getSafe()){
+              csvWriter.write(line+";true;"+shorturl.getUri().toString()+";\n");
+              h.setLocation(shorturl.getUri());
+              createdHeaders=true;
+            }else{
+              csvWriter.write(line+";false;La url no es alcanzable\n"); 
+            }
+          }else{
+            ShortURL shorturl = shortenerCSV(line, sponsor, request);
+            if (shorturl.getSafe()){
+              csvWriter.write(line+";true;"+shorturl.getUri().toString()+";\n");
+            }else{
+              csvWriter.write(line+";false;La url no es alcanzable\n"); 
+            }
+          }
+        }else{
+          csvWriter.write(line+";false;La url no es alcanzable\n"); 
+        }
+      }
+      
+      if(csvWriter.toString().length()>1 && createdHeaders){
+        log.info("Completo");
+        send("respuestaTest");
+        //return new ResponseEntity<>(csvWriter.toString(),h,HttpStatus.CREATED);
+      }else if(csvWriter.toString().length()>1){
+        //return new ResponseEntity<>(csvWriter.toString(),HttpStatus.CREATED);
+      }else{
+        //return new ResponseEntity<>("Empty file",HttpStatus.NOT_FOUND);
+      }
+    } else {
+      //return new ResponseEntity<>("There was no file",HttpStatus.NOT_FOUND);
+    }
+  }*/
 
   public ShortURL shortenerCSV(String url,String sponsor,HttpServletRequest request) {
     UrlValidator urlValidator = new UrlValidator(new String[] {"http","https"});
