@@ -67,4 +67,15 @@ public class ShortURLFixture {
       return null;
     }
   }
+
+  public static ShortURL shortURL3() {
+    try{
+      URI uri = new URI("http://localhost/f684a3c4");
+      return new ShortURL("f684a3c4", "http://example.com/", uri, null, null,
+      null, null, true, "127.0.0.1", null,null,"http://localhost:8080/qr/f684a3c4");
+    }
+   catch (Exception e) {
+      return null;
+    }
+  }
 }
