@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.MediaType;
 import urlshortener.domain.ShortURL;
@@ -21,11 +23,14 @@ import urlshortener.service.ServiceAgents;
 //Websocket
 import urlshortener.service.Message;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.util.HtmlUtils;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartException;
@@ -80,20 +85,42 @@ public class UrlShortenerCVSController {
 
   private final ServiceAgents serviceAgents;
 
+  @Autowired
+  private SimpMessagingTemplate simpMessagingTemplate;
+
   
   //@Async
   @MessageMapping("/chat")
-  @SendTo("/topic/messages")
-  public Message send(Message message) throws Exception {
+  @SendToUser("/topic/messages")
+  public void send(Message message, @Header("simpSessionId") String sessionId) throws Exception {
     log.info("entra");
-    if (message.getContent().length()>0) {
+    String contenido = message.getContent();
+    if (contenido.length()>0) {
       log.info("Recibimos");
-      return new Message("TODO","respuesta");
+      String[] lines = contenido.split("\n", -1); 
+      int count = lines.length-1;
+      log.info(String.valueOf(count));
+      //sendAux("llegó");
+      SimpMessageHeaderAccessor accessor = SimpMessageHeaderAccessor.create();
+      accessor.setHeader(SimpMessageHeaderAccessor.SESSION_ID_HEADER, sessionId);
+      Message resultado = new Message("TODO","llego");
+      simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",resultado, accessor.getMessageHeaders());
+      Thread.sleep(4000);
+      Message resultado2 = new Message("TODO","llego OTRO");
+      simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",resultado2, accessor.getMessageHeaders());
     }else{
       log.info("fallo");
-      return new Message("TODO","respuesta");
     }
   }
+
+
+  /*@SendTo("/topic/messages")
+  public Message sendAux(String message) throws Exception {
+    log.info("entra2");
+    return new Message("TODO",message);
+  }*/
+
+
 
   public UrlShortenerCVSController(ShortURLService shortUrlService, ClickService clickService,ServiceAgents serviceAgents) {
     this.shortUrlService = shortUrlService;

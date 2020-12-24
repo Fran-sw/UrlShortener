@@ -9,12 +9,14 @@ function connect(fileContent) {
     stompClient = Stomp.over(socket);  
     stompClient.connect({}, function(frame) { 
         console.log('Connected: ' + frame);
-        stompClient.subscribe('/topic/messages', function(messageOutput) {
+        stompClient.subscribe('/user/topic/messages', function(messageOutput) {
             showMessageOutput(JSON.parse(messageOutput.body));
         });
         $("#result2").html("Enviamos");
         sendMessage(fileContent);
         $("#result2").html("Enviado");
+        var lines = (fileContent.split(/\r\n|\r|\n/).length)-1;
+        $("#result2").html(lines);
         //disconnect();
     });
 }
