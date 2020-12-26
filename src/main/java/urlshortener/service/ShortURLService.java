@@ -59,7 +59,7 @@ public class ShortURLService {
       HttpURLConnection huc = (HttpURLConnection) url.openConnection();
 
       Integer responseCode = huc.getResponseCode();
-      //log.info("URL CODE: {}", responseCode);
+      //log.info("URL CODE: ", responseCode);
 
       if(responseCode < 400){
         return true;

@@ -1,9 +1,10 @@
 var socketClient = null;
 var stompClient = null;
 var resultado = "";
+var lineas = 0;
+var recibidas = 0;
             
 function connect(fileContent) {
-    $("#result2").html("Inicio conexion");
     var socket = new SockJS('/chat'); 
     socketClient = socket;
     stompClient = Stomp.over(socket);  
@@ -12,33 +13,42 @@ function connect(fileContent) {
         stompClient.subscribe('/user/topic/messages', function(messageOutput) {
             showMessageOutput(JSON.parse(messageOutput.body));
         });
-        $("#result2").html("Enviamos");
-        sendMessage(fileContent);
-        $("#result2").html("Enviado");
-        var lines = (fileContent.split(/\r\n|\r|\n/).length)-1;
-        $("#result2").html(lines);
-        //disconnect();
+        lineas = (fileContent.split(/\r\n|\r|\n/).length)-1;
+        if(lineas>0){
+            sendMessage(fileContent);
+        }else{
+            $("#result2").html("<div class='alert alert-danger lead'>No se ha introducido fichero</div>");
+            disconnect();
+        }
     });
 }
             
 function disconnect() {
     if(stompClient != null) {
         stompClient.disconnect();
-        console.log('Disconected');
     }
 }
    
-/*
-function sendMessage(file) {
-    stompClient.send("/app/chat", {}, JSON.stringify({'from':"from", 'csv':file, 'answer':"text"}));
-}*/
 function sendMessage(fileContent) {
-    stompClient.send("/app/chat", {}, JSON.stringify({'content':fileContent, 'answer':"text"}));
+    stompClient.send("/app/chat", {}, JSON.stringify({'content':fileContent, 'answer':window.location.href}));
 }
             
 function showMessageOutput(messageOutput) {
-    $("#result2").html("Respuesta");
-    $("#result2").html(messageOutput.answer);
+    recibidas++;
+    if(messageOutput.answer=="El fichero está vacio"){
+        $("#result2").html("<div class='alert alert-danger lead'>El fichero esta vacio</div>");
+    }else{
+        resultado=resultado+messageOutput.answer;
+        if(recibidas>=lineas){
+            var blob = new Blob([resultado],{type:'text/csv'});
+            var link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download="shortened.csv";
+            link.innerHTML="Download File";
+            $("#result2").html(link);
+            disconnect();
+        }
+    }
 }
 
 $(document).ready(
@@ -98,46 +108,23 @@ $(document).ready(
                     "<div class='alert alert-danger lead' style='display: none'></div>");
                 $("#result2").html(
                     "<div class='alert alert-danger lead' style='display: none'></div>");
-                $("#result2").html("Empieza");
+                resultado="";
+                lineas=0;
+                recibidas=0;
                 var form = $('#CSVshortener')[0];
                 var data = new FormData(form);
                 const reader = new FileReader();
-                $("#result2").html("abre reader");
+                
+                //https://github.com/piter1902/UrlShortener/blob/csvWebsockets/webApp/src/main/resources/static/js/app.js
+                // Solución inspirada en esta solución, la idea de leer el contenido del fichero desde el cliente y mandar el contenido al servidor.
+
                 var fileInput = data.get('csv');
                 reader.addEventListener('load', (event) => {
                   const result = event.target.result;
-                  $("#result2").html(result);
                   connect(result);
                 });
                 reader.readAsText(fileInput);
-                //$("#result2").html("lee3");
-                var fileInput = data.get('csv');
-                //connect(data);
                 
-                //https://github.com/piter1902/UrlShortener/blob/csvWebsockets/webApp/src/main/resources/static/js/app.js
-
-                /*
-                $.ajax({
-                    type: "POST",
-                    url: "/csv",
-                    enctype: 'multipart/form-data',
-                    processData: false,
-                    contentType: false,
-                    data: data,
-                    success: function (msg) {/*
-                        var blob = new Blob([msg],{type:'text/csv'});
-                        var link = document.createElement('a');
-                        link.href = window.URL.createObjectURL(blob);
-                        link.download="shortened.csv";
-                        link.innerHTML="Download File";
-                        $("#result2").html(
-                            link);
-                    },
-                    error: function () {
-                        $("#result2").html(
-                            "<div class='alert alert-danger lead'>ERROR</div>");
-                    }
-                });*/
             });
         $("#agentsInfo").submit(
             function (event) {

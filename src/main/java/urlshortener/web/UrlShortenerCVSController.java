@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.MediaType;
 import urlshortener.domain.ShortURL;
 import urlshortener.service.ClickService;
@@ -28,7 +27,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.util.HtmlUtils;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
@@ -74,7 +72,8 @@ import org.slf4j.LoggerFactory;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-@RestController
+
+@Controller
 public class UrlShortenerCVSController {
   private static final Logger log = LoggerFactory
       .getLogger(ShortURLService.class);
@@ -89,38 +88,42 @@ public class UrlShortenerCVSController {
   private SimpMessagingTemplate simpMessagingTemplate;
 
   
-  //@Async
   @MessageMapping("/chat")
   @SendToUser("/topic/messages")
-  public void send(Message message, @Header("simpSessionId") String sessionId) throws Exception {
-    log.info("entra");
+  public void send(Message message, @Header("simpSessionId") String sessionId, SimpMessageHeaderAccessor ha) throws Exception {
+    String remoteAddr = message.getAnswer();
+    remoteAddr = remoteAddr.substring(0, remoteAddr.length() - 1);
+    String ip = (String) ha.getSessionAttributes().get("ip");
+    SimpMessageHeaderAccessor accessor = SimpMessageHeaderAccessor.create();
+    accessor.setHeader(SimpMessageHeaderAccessor.SESSION_ID_HEADER, sessionId);
     String contenido = message.getContent();
     if (contenido.length()>0) {
-      log.info("Recibimos");
       String[] lines = contenido.split("\n", -1); 
       int count = lines.length-1;
-      log.info(String.valueOf(count));
-      //sendAux("llegó");
-      SimpMessageHeaderAccessor accessor = SimpMessageHeaderAccessor.create();
-      accessor.setHeader(SimpMessageHeaderAccessor.SESSION_ID_HEADER, sessionId);
-      Message resultado = new Message("TODO","llego");
-      simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",resultado, accessor.getMessageHeaders());
-      Thread.sleep(4000);
-      Message resultado2 = new Message("TODO","llego OTRO");
-      simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",resultado2, accessor.getMessageHeaders());
+      int posicion = 0;
+      Message resultado;
+      while (posicion<count) {
+        lines[posicion] = lines[posicion].replaceAll("\\s+","");
+        if(shortUrlService.checkReachable(lines[posicion])){
+          ShortURL shorturl = shortenerCSV(lines[posicion], "", ip);
+          if (shorturl.getSafe()){
+            resultado = new Message("TODO",lines[posicion]+";true;"+remoteAddr+shorturl.getUri().toString()+";\n");
+            simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",resultado, accessor.getMessageHeaders());
+          }else{
+            resultado = new Message("TODO",lines[posicion]+";false;La url no es alcanzable\n");
+            simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",resultado, accessor.getMessageHeaders());
+          }
+        }else{
+          resultado = new Message("TODO",lines[posicion]+";false;La url no es alcanzable\n");
+          simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",resultado, accessor.getMessageHeaders());
+        }
+        posicion++;
+      }
     }else{
-      log.info("fallo");
+      Message error = new Message("TODO","El fichero está vacio");
+      simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",error, accessor.getMessageHeaders());
     }
   }
-
-
-  /*@SendTo("/topic/messages")
-  public Message sendAux(String message) throws Exception {
-    log.info("entra2");
-    return new Message("TODO",message);
-  }*/
-
-
 
   public UrlShortenerCVSController(ShortURLService shortUrlService, ClickService clickService,ServiceAgents serviceAgents) {
     this.shortUrlService = shortUrlService;
@@ -143,117 +146,9 @@ public class UrlShortenerCVSController {
     log.info("Error while reading file");
   }
 
-  //Function to shorten al urls in a csv file
-  /*
-  @MessageMapping("/chat")
-  @SendTo("/topic/messages")
-  @RequestMapping(value = "/csv", method = RequestMethod.POST, produces= MediaType.TEXT_PLAIN_VALUE)
-  public ResponseEntity<String> generateShortenedCSV( @RequestHeader(value = "User-Agent") String userAgent, @RequestParam("csv") MultipartFile csv, @RequestParam(value = "sponsor", required = false) String sponsor,HttpServletRequest request)
-    throws IOException{
-
-      if (csv.getOriginalFilename().length()>1) { //Hay fichero, sino es una petición vacía
-      InputStream is = csv.getInputStream();
-      BufferedReader br = new BufferedReader(new InputStreamReader(is));
-      StringWriter csvWriter = new StringWriter();
-        
-      Boolean createdHeaders=false;
-      HttpHeaders h = new HttpHeaders();
-
-      String line;
-      while ((line = br.readLine()) != null) {
-        if(shortUrlService.checkReachable(line)){
-          if(!createdHeaders){
-            ShortURL shorturl = shortenerCSV(line, sponsor, request);
-            if (shorturl.getSafe()){
-              csvWriter.write(line+";true;"+shorturl.getUri().toString()+";\n");
-              h.setLocation(shorturl.getUri());
-              createdHeaders=true;
-            }else{
-              csvWriter.write(line+";false;La url no es alcanzable\n"); 
-            }
-          }else{
-            ShortURL shorturl = shortenerCSV(line, sponsor, request);
-            if (shorturl.getSafe()){
-              csvWriter.write(line+";true;"+shorturl.getUri().toString()+";\n");
-            }else{
-              csvWriter.write(line+";false;La url no es alcanzable\n"); 
-            }
-          }
-        }else{
-          csvWriter.write(line+";false;La url no es alcanzable\n"); 
-        }
-      }
-      
-      if(csvWriter.toString().length()>1 && createdHeaders){
-        return new ResponseEntity<>(csvWriter.toString(),h,HttpStatus.CREATED);
-      }else if(csvWriter.toString().length()>1){
-        return new ResponseEntity<>(csvWriter.toString(),HttpStatus.CREATED);
-      }else{
-        return new ResponseEntity<>("Empty file",HttpStatus.NOT_FOUND);
-      }
-    } else {
-      return new ResponseEntity<>("There was no file",HttpStatus.NOT_FOUND);
-    }
-  }*/
-
-/*
-  @MessageMapping("/chat")
-  //@SendTo("/topic/messages")
-  @RequestMapping(value = "/csv", method = RequestMethod.POST, produces= MediaType.TEXT_PLAIN_VALUE)
-  public void generateShortenedCSV( @RequestHeader(value = "User-Agent") String userAgent, @RequestParam("csv") MultipartFile csv, @RequestParam(value = "sponsor", required = false) String sponsor,HttpServletRequest request)
-    throws IOException{
-      log.info("Empieza");
-
-      if (csv.getOriginalFilename().length()>1) { //Hay fichero, sino es una petición vacía
-      InputStream is = csv.getInputStream();
-      BufferedReader br = new BufferedReader(new InputStreamReader(is));
-      StringWriter csvWriter = new StringWriter();
-        
-      Boolean createdHeaders=false;
-      HttpHeaders h = new HttpHeaders();
-
-      String line;
-      while ((line = br.readLine()) != null) {
-        if(shortUrlService.checkReachable(line)){
-          if(!createdHeaders){
-            ShortURL shorturl = shortenerCSV(line, sponsor, request);
-            if (shorturl.getSafe()){
-              csvWriter.write(line+";true;"+shorturl.getUri().toString()+";\n");
-              h.setLocation(shorturl.getUri());
-              createdHeaders=true;
-            }else{
-              csvWriter.write(line+";false;La url no es alcanzable\n"); 
-            }
-          }else{
-            ShortURL shorturl = shortenerCSV(line, sponsor, request);
-            if (shorturl.getSafe()){
-              csvWriter.write(line+";true;"+shorturl.getUri().toString()+";\n");
-            }else{
-              csvWriter.write(line+";false;La url no es alcanzable\n"); 
-            }
-          }
-        }else{
-          csvWriter.write(line+";false;La url no es alcanzable\n"); 
-        }
-      }
-      
-      if(csvWriter.toString().length()>1 && createdHeaders){
-        log.info("Completo");
-        send("respuestaTest");
-        //return new ResponseEntity<>(csvWriter.toString(),h,HttpStatus.CREATED);
-      }else if(csvWriter.toString().length()>1){
-        //return new ResponseEntity<>(csvWriter.toString(),HttpStatus.CREATED);
-      }else{
-        //return new ResponseEntity<>("Empty file",HttpStatus.NOT_FOUND);
-      }
-    } else {
-      //return new ResponseEntity<>("There was no file",HttpStatus.NOT_FOUND);
-    }
-  }*/
-
-  public ShortURL shortenerCSV(String url,String sponsor,HttpServletRequest request) {
+  public ShortURL shortenerCSV(String url,String sponsor,String remoteAddress) {
     UrlValidator urlValidator = new UrlValidator(new String[] {"http","https"});
-    ShortURL su = shortUrlService.save(url, sponsor, request.getRemoteAddr());
+    ShortURL su = shortUrlService.save(url, sponsor, remoteAddress);
     if (urlValidator.isValid(url) && shortUrlService.checkReachable(su.getTarget().toString())) {
       su = shortUrlService.mark(su,true);
       return su;
