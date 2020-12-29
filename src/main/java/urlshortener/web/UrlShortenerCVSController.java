@@ -91,6 +91,7 @@ public class UrlShortenerCVSController {
   @MessageMapping("/chat")
   @SendToUser("/topic/messages")
   public void send(Message message, @Header("simpSessionId") String sessionId, SimpMessageHeaderAccessor ha) throws Exception {
+    //Cogemos la Url a la que se accederá una vez acortada
     String remoteAddr = message.getAnswer();
     remoteAddr = remoteAddr.substring(0, remoteAddr.length() - 1);
     String ip = (String) ha.getSessionAttributes().get("ip");
@@ -103,19 +104,22 @@ public class UrlShortenerCVSController {
       int posicion = 0;
       Message resultado;
       while (posicion<count) {
+        //Quitamos espacios
         lines[posicion] = lines[posicion].replaceAll("\\s+","");
-        if(shortUrlService.checkReachable(lines[posicion])){
-          ShortURL shorturl = shortenerCSV(lines[posicion], "", ip);
-          if (shorturl.getSafe()){
-            resultado = new Message("TODO",lines[posicion]+";true;"+remoteAddr+shorturl.getUri().toString()+";\n");
-            simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",resultado, accessor.getMessageHeaders());
+        if(lines[posicion].length()>0){
+          if(shortUrlService.checkReachable(lines[posicion])){
+            ShortURL shorturl = shortenerCSV(lines[posicion], "", ip);
+            if (shorturl.getSafe()){
+              resultado = new Message("TODO",lines[posicion]+";true;"+remoteAddr+shorturl.getUri().toString()+";\n");
+              simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",resultado, accessor.getMessageHeaders());
+            }else{
+              resultado = new Message("TODO",lines[posicion]+";false;La url no es alcanzable\n");
+              simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",resultado, accessor.getMessageHeaders());
+            }
           }else{
             resultado = new Message("TODO",lines[posicion]+";false;La url no es alcanzable\n");
             simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",resultado, accessor.getMessageHeaders());
           }
-        }else{
-          resultado = new Message("TODO",lines[posicion]+";false;La url no es alcanzable\n");
-          simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",resultado, accessor.getMessageHeaders());
         }
         posicion++;
       }

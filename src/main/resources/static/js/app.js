@@ -13,7 +13,12 @@ function connect(fileContent) {
         stompClient.subscribe('/user/topic/messages', function(messageOutput) {
             showMessageOutput(JSON.parse(messageOutput.body));
         });
-        lineas = (fileContent.split(/\r\n|\r|\n/).length)-1;
+        //Limpieza de lineas vacias de https://stackoverflow.com/questions/16369642/javascript-how-to-use-a-regular-expression-to-remove-blank-lines-from-a-string
+            $("#result2").html("<div class='alert alert-danger lead'>roducido fichero</div>");
+        fileContent = fileContent + "\r\n" + "\r\n";
+        var fileContentCount = fileContent.replace(/^\s*[\r\n]/gm,'');
+        lineas = (fileContentCount.split(/\r\n|\r|\n/).length-1);
+        $("#result2").html(lineas);
         if(lineas>0){
             sendMessage(fileContent);
         }else{
