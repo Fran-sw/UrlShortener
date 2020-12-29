@@ -17,6 +17,7 @@ function connect(fileContent) {
             $("#result2").html("<div class='alert alert-danger lead'>roducido fichero</div>");
         fileContent = fileContent + "\r\n" + "\r\n";
         var fileContentCount = fileContent.replace(/^\s*[\r\n]/gm,'');
+        //Siempre habrá una línea vacía al final del fichero, se ignora
         lineas = (fileContentCount.split(/\r\n|\r|\n/).length-1);
         $("#result2").html(lineas);
         if(lineas>0){
