@@ -11,10 +11,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static urlshortener.fixtures.ShortURLFixture.someUrl;
 import static urlshortener.fixtures.ShortURLFixture.shortURL1;
 import static urlshortener.fixtures.ShortURLFixture.shortURL2;
 import static urlshortener.fixtures.ShortURLFixture.shortURL3;
+import static urlshortener.fixtures.ShortURLFixture.shortURL4;
+import static urlshortener.fixtures.ShortURLFixture.shortURL5;
 
 
 
@@ -29,10 +32,13 @@ import org.mockito.stubbing.Answer;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.EscapedErrors;
+import org.springframework.http.MediaType;
 
 import urlshortener.domain.ShortURL;
 import urlshortener.service.ClickService;
 import urlshortener.service.ShortURLService;
+
+
 
 public class QrTests {
 
@@ -56,7 +62,7 @@ public class QrTests {
   @Test
   public void thatvalidURLgetsQRifCheckbox()
       throws Exception {
-        configureSave(null);
+    configureSave(null);
     when(shortUrlService.checkReachable(any())).thenReturn(true);
     when(shortUrlService.mark(any(),anyBoolean())).thenReturn(shortURL3());
 
@@ -71,6 +77,55 @@ public class QrTests {
         .andExpect(jsonPath("$.target", is("http://example.com/")))
         .andExpect(jsonPath("$.qrUrl", is("http://localhost:8080/qr/f684a3c4")));
   }
+
+  @Test
+  public void thatNOvalidURLgetsQRifCheckbox()
+      throws Exception {
+    configureSave(null);
+    when(shortUrlService.checkReachable(any())).thenReturn(true);
+    when(shortUrlService.mark(any(),anyBoolean())).thenReturn(shortURL3());
+
+    mockMvc.perform(
+        post("/link").param("url", "httc://example./").param(
+            "qr", "yes"))
+        .andDo(print())
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void getQrFromValidhash()
+      throws Exception {
+        when(shortUrlService.findByKey(any())).thenReturn(shortURL5());
+
+    mockMvc.perform(get("/qr/{id}", "f684a3c4"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.IMAGE_JPEG_VALUE));
+  }
+
+  @Test
+  public void getQrFromValidhashNoCreated()
+      throws Exception {
+        when(shortUrlService.findByKey(any())).thenReturn(shortURL4());
+
+    mockMvc.perform(get("/qr/{id}", "f684a3c4"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.IMAGE_JPEG_VALUE));
+  }
+
+  @Test
+  public void getQrFromNoValidhash()
+      throws Exception {
+    configureSave(null);
+    when(shortUrlService.checkReachable(any())).thenReturn(true);
+    when(shortUrlService.mark(any(),anyBoolean())).thenReturn(shortURL3());
+
+    mockMvc.perform(get("/qr/{id}", "g7sdj45g"))
+        .andDo(print())
+        .andExpect(status().isBadRequest());
+  }
+
 
   private void configureSave(String qrUrl) {
     when(shortUrlService.save(any(), any(), any()))

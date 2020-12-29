@@ -53,6 +53,7 @@ import java.nio.file.Paths;
 
 import java.util.Base64;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -75,8 +76,16 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.http.CacheControl;
+
+
+
 @EnableAsync
 @RestController
+@EnableCaching
 public class UrlShortenerController {
 
   private final ShortURLService shortUrlService;
@@ -108,6 +117,19 @@ public class UrlShortenerController {
       return qr;
   }
 
+  private static byte[] generateQRCodeImageByte(String uri,int width, int height)
+          throws WriterException, IOException {
+      QRCodeWriter qrCodeWriter = new QRCodeWriter();
+      BitMatrix bitMatrix = qrCodeWriter.encode(uri, BarcodeFormat.QR_CODE, width, height);
+      BufferedImage new_qr = MatrixToImageWriter.toBufferedImage(bitMatrix);
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      ImageIO.write(new_qr,"png",bos);
+      byte[] qr_b = bos.toByteArray();
+      qr_b = Base64.getEncoder().encode(qr_b);
+      return qr_b;
+  }
+
+  @Cacheable("ResponsesUrlShort")
   @RequestMapping(value = "/{id:(?!link|index).*}", method = RequestMethod.GET)
   public ResponseEntity<?> redirectTo(@PathVariable String id,
                                       @RequestHeader(value = "User-Agent", required = false) String userAgent,
@@ -132,22 +154,39 @@ public class UrlShortenerController {
   @RequestMapping(value = "/qr/{id}", method = RequestMethod.GET, produces = MediaType.IMAGE_JPEG_VALUE)
   public ResponseEntity<byte[]> takeQR (@PathVariable String id) throws IOException {
 
-    
-      /*  Esto funciona, pero lo genera de 0.
       ShortURL su = shortUrlService.findByKey(id);
-      byte[] bytes = generateQrCodeBytes(su.getTarget(), 250, 250);
-      System.out.println("Almenos intenta imprimir algo ...");
-      */
+      if (su != null){
+        String aux = su.getQr();
 
-      //Vamos a probar a generar el byte[] a partir del string que tenemos
-      ShortURL su = shortUrlService.findByKey(id);
-      String aux = su.getQr();
-      byte[] bytes = Base64.getDecoder().decode(aux);
-  
-      return ResponseEntity
-      .ok()
-      .contentType(MediaType.IMAGE_JPEG)
-      .body(bytes);
+        if(aux == null){
+          try {
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
+            BitMatrix bitMatrix = qrCodeWriter.encode(su.getUri().toString(), BarcodeFormat.QR_CODE, 250, 250);
+            BufferedImage new_qr = MatrixToImageWriter.toBufferedImage(bitMatrix);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ImageIO.write(new_qr,"png",bos);
+            byte[] qr_b = bos.toByteArray();
+            qr_b = Base64.getEncoder().encode(qr_b);
+            aux = new String(qr_b);
+          } catch (WriterException e) {
+            System.out.println("Could not generate QR Code On Get, WriterException :: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+          } catch (IOException e) {
+            System.out.println("Could not generate QR Code On Get, IOException :: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+          }
+        }
+        byte[] bytes = Base64.getDecoder().decode(aux);
+    
+        return ResponseEntity
+        .ok()
+        .cacheControl(CacheControl.maxAge(86400*365, TimeUnit.SECONDS).noTransform().mustRevalidate())
+        .contentType(MediaType.IMAGE_JPEG)
+        .body(bytes);
+      } else {
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+      }
+
   } 
 
   @RequestMapping(value = "/link", method = RequestMethod.POST)
