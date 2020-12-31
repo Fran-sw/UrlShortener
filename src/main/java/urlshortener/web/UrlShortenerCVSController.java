@@ -110,14 +110,14 @@ public class UrlShortenerCVSController {
           if(shortUrlService.checkReachable(lines[posicion])){
             ShortURL shorturl = shortenerCSV(lines[posicion], "", ip);
             if (shorturl.getSafe()){
-              resultado = new Message("TODO",lines[posicion]+";true;"+remoteAddr+shorturl.getUri().toString()+";\n");
+              resultado = new Message("empty",lines[posicion]+";true;"+remoteAddr+shorturl.getUri().toString()+";\n");
               simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",resultado, accessor.getMessageHeaders());
             }else{
-              resultado = new Message("TODO",lines[posicion]+";false;La url no es alcanzable\n");
+              resultado = new Message("empty",lines[posicion]+";false;La url no es alcanzable\n");
               simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",resultado, accessor.getMessageHeaders());
             }
           }else{
-            resultado = new Message("TODO",lines[posicion]+";false;La url no es alcanzable\n");
+            resultado = new Message("empty",lines[posicion]+";false;La url no es alcanzable\n");
             simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",resultado, accessor.getMessageHeaders());
           }
         }
