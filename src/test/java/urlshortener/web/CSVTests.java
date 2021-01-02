@@ -77,7 +77,9 @@ import org.springframework.web.socket.config.annotation.AbstractWebSocketMessage
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 
+import org.springframework.stereotype.Service;
 
+@Service
 public class CSVTests {
 
 	@Autowired private AbstractSubscribableChannel clientInboundChannel;
