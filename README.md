@@ -10,7 +10,6 @@ The __project__ is a [Spring Boot](http://docs.spring.io/spring-boot/docs/curren
 * __Redirection service__: `GET /{id}` redirects the request to a URL associated with the parameter `id`.
 * __Database service__: Persistence and retrieval of `ShortURL` and `Click` objects.
 
-
 The application can be run in Linux and macOS as follows:
 
 ```
@@ -63,3 +62,11 @@ $ curl -v http://localhost:8080/6bb9db44
 < Content-Length: 0
 <
 ```
+
+------------------------------------------------------------------------------
+
+To generate the open api:
+
+Run app -> On terminal "gradle bootrun"
+
+On a webpage -> "http://localhost:8080/v3/api-docs.yaml" and open the .yaml generated. You can open "http://localhost:8080/v3/api-docs/" to obtain the .json open api
