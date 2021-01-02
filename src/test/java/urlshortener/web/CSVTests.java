@@ -78,8 +78,14 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 
 import org.springframework.stereotype.Service;
+import org.springframework.boot.test.context.SpringBootTest;
 
 @Service
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {
+		CSVTests.TestWebSocketConfig.class,
+		CSVTests.TestConfig.class
+})
 public class CSVTests {
 
 	@Autowired private AbstractSubscribableChannel clientInboundChannel;
@@ -140,5 +146,60 @@ public class CSVTests {
         
         //Comprobamos el contenido del mensaje
         assertEquals(positionUpdate.getPayload(),expectedCSV);
-    }
+	}
+	
+	@Configuration
+	@EnableScheduling
+	@ComponentScan(
+			basePackages="org.springframework.samples",
+			excludeFilters = @ComponentScan.Filter(type= FilterType.ANNOTATION, value = Configuration.class)
+	)
+	@EnableWebSocketMessageBroker
+	static class TestWebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
+
+		@Autowired
+		Environment env;
+
+		@Override
+		public void registerStompEndpoints(StompEndpointRegistry registry) {
+			registry.addEndpoint("/chat").withSockJS();
+		}
+
+		@Override
+		public void configureMessageBroker(MessageBrokerRegistry registry) {
+			registry.enableStompBrokerRelay("/topic/");
+			registry.setApplicationDestinationPrefixes("/app");
+		}
+	}
+
+	/**
+	 * Configuration class that un-registers MessageHandler's it finds in the
+	 * ApplicationContext from the message channels they are subscribed to...
+	 * except the message handler used to invoke annotated message handling methods.
+	 * The intent is to reduce additional processing and additional messages not
+	 * related to the test.
+	 */
+	@Configuration
+	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+	static class TestConfig implements ApplicationListener<ContextRefreshedEvent> {
+
+		@Autowired
+		private List<SubscribableChannel> channels;
+
+		@Autowired
+		private List<MessageHandler> handlers;
+
+
+		@Override
+		public void onApplicationEvent(ContextRefreshedEvent event) {
+			for (MessageHandler handler : handlers) {
+				if (handler instanceof SimpAnnotationMethodMessageHandler) {
+					continue;
+				}
+				for (SubscribableChannel channel :channels) {
+					channel.unsubscribe(handler);
+				}
+			}
+		}
+	}
 }
