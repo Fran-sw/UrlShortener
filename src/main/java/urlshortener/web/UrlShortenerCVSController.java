@@ -20,7 +20,7 @@ import urlshortener.service.ShortURLService;
 import urlshortener.service.ServiceAgents;
 
 //Websocket
-import urlshortener.service.Message;
+import urlshortener.service.MessageInternal;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
@@ -90,7 +90,7 @@ public class UrlShortenerCVSController {
   
   @MessageMapping("/chat")
   @SendToUser("/topic/messages")
-  public void send(Message message, @Header("simpSessionId") String sessionId, SimpMessageHeaderAccessor ha) throws Exception {
+  public void send(MessageInternal message, @Header("simpSessionId") String sessionId, SimpMessageHeaderAccessor ha) throws Exception {
     //Cogemos la Url a la que se accederá una vez acortada
     String remoteAddr = message.getAnswer();
     remoteAddr = remoteAddr.substring(0, remoteAddr.length() - 1);
@@ -102,7 +102,7 @@ public class UrlShortenerCVSController {
       String[] lines = contenido.split("\n", -1); 
       int count = lines.length-1;
       int posicion = 0;
-      Message resultado;
+      MessageInternal resultado;
       while (posicion<count) {
         //Quitamos espacios
         lines[posicion] = lines[posicion].replaceAll("\\s+","");
@@ -110,21 +110,21 @@ public class UrlShortenerCVSController {
           if(shortUrlService.checkReachable(lines[posicion])){
             ShortURL shorturl = shortenerCSV(lines[posicion], "", ip);
             if (shorturl.getSafe()){
-              resultado = new Message("empty",lines[posicion]+";true;"+remoteAddr+shorturl.getUri().toString()+";\n");
+              resultado = new MessageInternal("empty",lines[posicion]+";true;"+remoteAddr+shorturl.getUri().toString()+";\n");
               simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",resultado, accessor.getMessageHeaders());
             }else{
-              resultado = new Message("empty",lines[posicion]+";false;La url no es alcanzable\n");
+              resultado = new MessageInternal("empty",lines[posicion]+";false;La url no es alcanzable\n");
               simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",resultado, accessor.getMessageHeaders());
             }
           }else{
-            resultado = new Message("empty",lines[posicion]+";false;La url no es alcanzable\n");
+            resultado = new MessageInternal("empty",lines[posicion]+";false;La url no es alcanzable\n");
             simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",resultado, accessor.getMessageHeaders());
           }
         }
         posicion++;
       }
     }else{
-      Message error = new Message("TODO","El fichero está vacio");
+      MessageInternal error = new MessageInternal("TODO","El fichero está vacio");
       simpMessagingTemplate.convertAndSendToUser(sessionId, "/topic/messages",error, accessor.getMessageHeaders());
     }
   }

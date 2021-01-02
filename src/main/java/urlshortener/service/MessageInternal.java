@@ -1,14 +1,14 @@
 package urlshortener.service;
 
-public class Message {
+public class MessageInternal {
 
     private String content;
     private String answer;
 
-    public Message() {
+    public MessageInternal() {
     }
   
-    public Message(String Ncontent, String Nanswer) {
+    public MessageInternal(String Ncontent, String Nanswer) {
         this.content = Ncontent;
         this.answer = Nanswer;
     }
