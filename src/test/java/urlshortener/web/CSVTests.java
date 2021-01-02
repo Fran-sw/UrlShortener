@@ -106,6 +106,7 @@ public class CSVTests {
   
 
     @Test
+    @Ignore
     public void checkCreateShortenedCSV() throws Exception {
 
         //Enviamos una solicitud de SUBSCRIBE
