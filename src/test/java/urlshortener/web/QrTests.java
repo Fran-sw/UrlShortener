@@ -19,8 +19,6 @@ import static urlshortener.fixtures.ShortURLFixture.shortURL3;
 import static urlshortener.fixtures.ShortURLFixture.shortURL4;
 import static urlshortener.fixtures.ShortURLFixture.shortURL5;
 
-
-
 import java.net.URI;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -74,8 +72,7 @@ public class QrTests {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.hash", is("f684a3c4")))
         .andExpect(jsonPath("$.uri", is("http://localhost/f684a3c4")))
-        .andExpect(jsonPath("$.target", is("http://example.com/")))
-        .andExpect(jsonPath("$.qrUrl", is("http://localhost:8080/qr/f684a3c4")));
+        .andExpect(jsonPath("$.target", is("http://example.com/")));
   }
 
   @Test

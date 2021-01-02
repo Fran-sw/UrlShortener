@@ -17,7 +17,6 @@ import urlshortener.service.ClickService;
 import urlshortener.service.ShortURLService;
 import urlshortener.service.ServiceAgents;
 
-
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartException;
 
@@ -26,6 +25,8 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -79,6 +80,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+
 import org.springframework.http.CacheControl;
 
 
@@ -195,7 +197,7 @@ public class UrlShortenerController {
                                             String sponsor,
                                             @RequestHeader(value = "User-Agent", required = false) String userAgent,
                                             @RequestParam(value = "qr", required = false) String checkboxValue,
-                                            HttpServletRequest request) {
+                                            HttpServletRequest request) throws Exception {
     UrlValidator urlValidator = new UrlValidator(new String[] {"http",
         "https"});
     if (urlValidator.isValid(url)) {
@@ -212,10 +214,20 @@ public class UrlShortenerController {
         reachableHeaders = HttpStatus.CREATED;
       }
       if (checkboxValue != null ){      //Si se requiere qr
-        su.setQrUrl("http://localhost:8080/qr/"+su.getHash());
-        if (!shortUrlService.existShortURLByUri(su.getHash())){ //Si no existe se genera
-          generarQR(su);
-        }
+          //try {
+            URL crearURL = linkTo(methodOn(UrlShortenerController.class).takeQR(su.getHash())).toUri().toURL();
+            //Link link = linkTo(UrlShortenerController.takeQR);//.withRel("people");
+            //su.setQrUrl("http://localhost:8080/qr/"+su.getHash());
+            su.setQrUrl(crearURL.toString());
+            if (!shortUrlService.existShortURLByUri(su.getHash())){ //Si no existe se genera
+              generarQR(su);
+            }
+          /*} catch(MalformedURLException e) {
+            System.out.println("Could not generate QR link, Malformed URI :: " + e.getMessage());
+          } catch(IOException e) {
+            System.out.println("Could not generate QR link, IOException :: " + e.getMessage());            
+          }*/
+
       } else {
         su.setQrUrl(null);
       } 

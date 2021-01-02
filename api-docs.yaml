@@ -1,0 +1,138 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8080/
+  description: Generated server url
+paths:
+  /link:
+    post:
+      tags:
+      - url-shortener-controller
+      operationId: shortener
+      parameters:
+      - name: url
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: sponsor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: User-Agent
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: qr
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ShortURL'
+  /{id}:
+    get:
+      tags:
+      - url-shortener-controller
+      operationId: redirectTo
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: User-Agent
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /qr/{id}:
+    get:
+      tags:
+      - url-shortener-controller
+      operationId: takeQR
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            image/jpeg:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: byte
+  /agentsInfo:
+    get:
+      tags:
+      - url-shortener-agents-controller
+      operationId: agentsInfo
+      parameters:
+      - name: User-Agent
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+                  format: int32
+components:
+  schemas:
+    ShortURL:
+      type: object
+      properties:
+        hash:
+          type: string
+        target:
+          type: string
+        uri:
+          type: string
+          format: uri
+        sponsor:
+          type: string
+        created:
+          type: string
+          format: date-time
+        owner:
+          type: string
+        mode:
+          type: integer
+          format: int32
+        safe:
+          type: boolean
+        ip:
+          type: string
+        country:
+          type: string
+        qr:
+          type: string
+        qrUrl:
+          type: string

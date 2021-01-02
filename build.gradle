@@ -39,6 +39,8 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.apache.httpcomponents:httpclient'
+
+    implementation "org.springdoc:springdoc-openapi-ui:1.5.2"
 }
 
 clean.doFirst {
