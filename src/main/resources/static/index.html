@@ -8,6 +8,8 @@
     <script src="webjars/jquery/2.1.4/jquery.min.js" type="text/javascript"></script>
     <script src="webjars/bootstrap/3.3.5/js/bootstrap.min.js"
             type="text/javascript"></script>
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
     <script src="js/app.js" type="text/javascript">
     </script>
 </head>
@@ -51,7 +53,7 @@
         <div class="col-lg-12 text-center">
             <form action="" class="col-lg-12" id="CSVshortener" role="form" enctype="multipart/form-data">
                 <div class="input-group input-group-lg col-sm-offset-4 col-sm-4">
-                    <input class="center-block form-control input-lg" name="csv" type="file" accept=".csv" formenctype="multipart/form-data">
+                    <input class="center-block form-control input-lg" name="csv" id="csv" type="file" accept=".csv" formenctype="multipart/form-data">
                         <span class="input-group-btn"><button class="btn btn-lg btn-primary" type="submit">Short me!</button></span>
                 </div>
             </form>
