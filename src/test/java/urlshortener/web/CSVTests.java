@@ -88,7 +88,7 @@ public class CSVTests {
 		clientInboundChannel.send(sendMessage);
 
 		// Esperamos a recibir una respuesta
-		Message<?> positionUpdate = brokerChannelInterceptor.awaitMessage(5);
+		Message<?> positionUpdate = brokerChannelInterceptor.awaitMessage(15);
 		assertNotNull(positionUpdate);
 
 		// Nos aseguramos que podemos procesar su contenido
