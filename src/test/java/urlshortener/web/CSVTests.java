@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.util.MimeType;
@@ -51,6 +52,7 @@ public class CSVTests {
 		);
 	}
 
+	@Ignore
 	@Test
 	public void whithoutTheLastSemicolonTheHashChanges() throws Exception {
 		test(
@@ -59,6 +61,7 @@ public class CSVTests {
 		);
 	}
 
+	@Ignore
 	@Test
 	public void whyThisFails() throws Exception {	//Used to fail, now both client and server make sure to add 1 line separator at the end of the file for correct line count
 		test(
@@ -88,7 +91,7 @@ public class CSVTests {
 		clientInboundChannel.send(sendMessage);
 
 		// Esperamos a recibir una respuesta
-		Message<?> positionUpdate = brokerChannelInterceptor.awaitMessage(6000);
+		Message<?> positionUpdate = brokerChannelInterceptor.awaitMessage(300);
 		assertNotNull(positionUpdate);
 
 		// Nos aseguramos que podemos procesar su contenido

@@ -100,7 +100,7 @@ public class UrlShortenerCVSController {
     String contenido = message.getContent();
     //Aseguramos que habrá un salto de línea al final del contenido, para asegurar un conteo correcto de líneas
     contenido = contenido + System.lineSeparator()+System.lineSeparator();
-    contenido.replaceAll("\r\n", "");
+    contenido.replaceAll("\n", "");
     if (contenido.length()>0) {
       String[] lines = contenido.split("\n", -1); 
       int count = lines.length-1;
