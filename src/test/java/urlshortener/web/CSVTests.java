@@ -52,7 +52,7 @@ public class CSVTests {
 		);
 	}
 
-	@Ignore
+	//@Ignore
 	@Test
 	public void whithoutTheLastSemicolonTheHashChanges() throws Exception {
 		test(
