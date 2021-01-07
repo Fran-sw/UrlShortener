@@ -42,9 +42,16 @@ public class CSVTests {
     public void setUp() {
 		brokerChannelInterceptor = new TestChannelInterceptor();
 		brokerChannel.addInterceptor(this.brokerChannelInterceptor);
+		
+		//Enviamos una solicitud de SUBSCRIBE a /user/topic/messages
+		StompHeaderAccessor subscribeHeaders = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
+		subscribeHeaders.setDestination("/user/topic/messages");
+		subscribeHeaders.setSessionId("");
+		Message<byte[]> subscribeMessage = MessageBuilder.createMessage(new byte[0], subscribeHeaders.getMessageHeaders());
+		clientInboundChannel.send(subscribeMessage);
     }
 
-	@Ignore
+	//@Ignore
     @Test
     public void currentBehaviour() throws Exception {
 		test(
@@ -62,7 +69,7 @@ public class CSVTests {
 		);
 	}
 
-	@Ignore
+	//@Ignore
 	@Test
 	public void whyThisFails() throws Exception {	//Used to fail, now both client and server make sure to add 1 line separator at the end of the file for correct line count
 		test(
@@ -73,11 +80,13 @@ public class CSVTests {
 
 	public void test(String send, String expected) throws IOException, InterruptedException {
 		//Enviamos una solicitud de SUBSCRIBE a /user/topic/messages
+		/*
 		StompHeaderAccessor subscribeHeaders = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
 		subscribeHeaders.setDestination("/user/topic/messages");
 		subscribeHeaders.setSessionId("");
 		Message<byte[]> subscribeMessage = MessageBuilder.createMessage(new byte[0], subscribeHeaders.getMessageHeaders());
 		clientInboundChannel.send(subscribeMessage);
+		*/
 
 		// A partir de ahora esperamos mensajes enviados a /user/topic/messages
 		brokerChannelInterceptor.setIncludedDestinations("/user/topic/messages");
