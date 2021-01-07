@@ -42,16 +42,9 @@ public class CSVTests {
     public void setUp() {
 		brokerChannelInterceptor = new TestChannelInterceptor();
 		brokerChannel.addInterceptor(this.brokerChannelInterceptor);
-		
-		//Enviamos una solicitud de SUBSCRIBE a /user/topic/messages
-		StompHeaderAccessor subscribeHeaders = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
-		subscribeHeaders.setDestination("/user/topic/messages");
-		subscribeHeaders.setSessionId("");
-		Message<byte[]> subscribeMessage = MessageBuilder.createMessage(new byte[0], subscribeHeaders.getMessageHeaders());
-		clientInboundChannel.send(subscribeMessage);
     }
-
-	//@Ignore
+/*
+	@Ignore
     @Test
     public void currentBehaviour() throws Exception {
 		test(
@@ -69,7 +62,7 @@ public class CSVTests {
 		);
 	}
 
-	//@Ignore
+	@Ignore
 	@Test
 	public void whyThisFails() throws Exception {	//Used to fail, now both client and server make sure to add 1 line separator at the end of the file for correct line count
 		test(
@@ -80,13 +73,11 @@ public class CSVTests {
 
 	public void test(String send, String expected) throws IOException, InterruptedException {
 		//Enviamos una solicitud de SUBSCRIBE a /user/topic/messages
-		/*
 		StompHeaderAccessor subscribeHeaders = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
 		subscribeHeaders.setDestination("/user/topic/messages");
 		subscribeHeaders.setSessionId("");
 		Message<byte[]> subscribeMessage = MessageBuilder.createMessage(new byte[0], subscribeHeaders.getMessageHeaders());
 		clientInboundChannel.send(subscribeMessage);
-		*/
 
 		// A partir de ahora esperamos mensajes enviados a /user/topic/messages
 		brokerChannelInterceptor.setIncludedDestinations("/user/topic/messages");
@@ -110,5 +101,70 @@ public class CSVTests {
 		MessageInternal receivedMessage = new ObjectMapper().readValue((byte[]) positionUpdate.getPayload(), MessageInternal.class);
 
 		assertEquals(expected, receivedMessage.getAnswer());
+	}*/
+
+	@Test
+	public void globalTestForTravis() throws Exception {	//Used to fail, now both client and server make sure to add 1 line separator at the end of the file for correct line count
+		//Enviamos una solicitud de SUBSCRIBE a /user/topic/messages
+		StompHeaderAccessor subscribeHeaders = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
+		subscribeHeaders.setDestination("/user/topic/messages");
+		subscribeHeaders.setSessionId("");
+		Message<byte[]> subscribeMessage = MessageBuilder.createMessage(new byte[0], subscribeHeaders.getMessageHeaders());
+		clientInboundChannel.send(subscribeMessage);
+
+		// A partir de ahora esperamos mensajes enviados a /user/topic/messages
+		brokerChannelInterceptor.setIncludedDestinations("/user/topic/messages");
+
+		// Enviamos la URL a acortar via SEND /app/chat
+		MessageInternal sendPayload = new MessageInternal("https://www.youtube.com/watch?v=oGURDYckNEI&ab_channel=Kat;\n","http://localhost:8080/");
+		StompHeaderAccessor sendHeaders = StompHeaderAccessor.create(StompCommand.SEND);
+		sendHeaders.setDestination("/app/chat");
+		sendHeaders.setSessionId("");
+		sendHeaders.setSessionAttributes(Collections.emptyMap());
+		Message<MessageInternal> sendMessage = MessageBuilder.createMessage(sendPayload, sendHeaders.getMessageHeaders());
+		clientInboundChannel.send(sendMessage);
+
+		// Esperamos a recibir una respuesta
+		Message<?> positionUpdate = brokerChannelInterceptor.awaitMessage(300);
+		assertNotNull(positionUpdate);
+
+		// Nos aseguramos que podemos procesar su contenido
+		assertEquals(MimeType.valueOf("application/json"), positionUpdate.getHeaders().get("contentType"));
+		assertEquals(positionUpdate.getPayload().getClass(), byte[].class);
+		MessageInternal receivedMessage = new ObjectMapper().readValue((byte[]) positionUpdate.getPayload(), MessageInternal.class);
+
+		assertEquals("https://www.youtube.com/watch?v=oGURDYckNEI&ab_channel=Kat;;true;http://localhost:8080/3ae419f7;\n", receivedMessage.getAnswer());
+
+		sendPayload = new MessageInternal("https://www.youtube.com/watch?v=oGURDYckNEI&ab_channel=Kat\n","http://localhost:8080/");
+		sendMessage = MessageBuilder.createMessage(sendPayload, sendHeaders.getMessageHeaders());
+		clientInboundChannel.send(sendMessage);
+
+		// Esperamos a recibir una respuesta
+		positionUpdate = brokerChannelInterceptor.awaitMessage(300);
+		assertNotNull(positionUpdate);
+
+		// Nos aseguramos que podemos procesar su contenido
+		assertEquals(MimeType.valueOf("application/json"), positionUpdate.getHeaders().get("contentType"));
+		assertEquals(positionUpdate.getPayload().getClass(), byte[].class);
+		receivedMessage = new ObjectMapper().readValue((byte[]) positionUpdate.getPayload(), MessageInternal.class);
+
+		assertEquals("https://www.youtube.com/watch?v=oGURDYckNEI&ab_channel=Kat;true;http://localhost:8080/ec64f62e;\n", receivedMessage.getAnswer());
+
+		
+		sendPayload = new MessageInternal("https://www.youtube.com/watch?v=oGURDYckNEI&ab_channel=Kat","http://localhost:8080/");
+		sendMessage = MessageBuilder.createMessage(sendPayload, sendHeaders.getMessageHeaders());
+		clientInboundChannel.send(sendMessage);
+
+		// Esperamos a recibir una respuesta
+		positionUpdate = brokerChannelInterceptor.awaitMessage(300);
+		assertNotNull(positionUpdate);
+
+		// Nos aseguramos que podemos procesar su contenido
+		assertEquals(MimeType.valueOf("application/json"), positionUpdate.getHeaders().get("contentType"));
+		assertEquals(positionUpdate.getPayload().getClass(), byte[].class);
+		receivedMessage = new ObjectMapper().readValue((byte[]) positionUpdate.getPayload(), MessageInternal.class);
+
+		assertEquals("https://www.youtube.com/watch?v=oGURDYckNEI&ab_channel=Kat;true;http://localhost:8080/ec64f62e;\n", receivedMessage.getAnswer());
 	}
+
 }
