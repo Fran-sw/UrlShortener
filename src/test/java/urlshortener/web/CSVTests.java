@@ -44,6 +44,7 @@ public class CSVTests {
 		brokerChannel.addInterceptor(this.brokerChannelInterceptor);
     }
 
+	@Ignore
     @Test
     public void currentBehaviour() throws Exception {
 		test(
