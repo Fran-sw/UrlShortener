@@ -3,203 +3,99 @@
  */
 package urlshortener.web;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static urlshortener.fixtures.ShortURLFixture.someUrl;
-import static urlshortener.fixtures.ShortURLFixture.shortURL1;
-import static urlshortener.fixtures.ShortURLFixture.shortURL2;
-import static urlshortener.fixtures.ShortURLFixture.shortURL3;
-import static urlshortener.fixtures.ShortURLFixture.shortURL4;
-import static urlshortener.fixtures.ShortURLFixture.shortURL5;
-
-import java.net.URI;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.Collections;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.stubbing.Answer;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.bind.EscapedErrors;
-import org.springframework.http.MediaType;
 
-import urlshortener.domain.ShortURL;
-import urlshortener.service.ClickService;
-import urlshortener.service.ShortURLService;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.util.MimeType;
 
 import urlshortener.service.MessageInternal;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.Assert.*;
 
-import java.nio.charset.Charset;
-import java.util.HashMap;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.core.env.Environment;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHandler;
-import org.springframework.messaging.SubscribableChannel;
-import org.springframework.messaging.simp.annotation.support.SimpAnnotationMethodMessageHandler;
-import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.AbstractSubscribableChannel;
 import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.util.JsonPathExpectationsHelper;
-import org.springframework.web.socket.config.annotation.AbstractWebSocketMessageBrokerConfigurer;
-import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
-import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 
-import org.springframework.stereotype.Service;
-import org.springframework.boot.test.context.SpringBootTest;
-
-@Service
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {
-		CSVTests.TestWebSocketConfig.class,
-		CSVTests.TestConfig.class
-})
+@SpringBootTest
 public class CSVTests {
 
 	@Autowired private AbstractSubscribableChannel clientInboundChannel;
 
-	@Autowired private AbstractSubscribableChannel clientOutboundChannel;
-
 	@Autowired private AbstractSubscribableChannel brokerChannel;
-
-	private TestChannelInterceptor clientOutboundChannelInterceptor;
 
 	private TestChannelInterceptor brokerChannelInterceptor;
 
-    private String contenidoCSV = "https://www.youtube.com/watch?v=oGURDYckNEI&ab_channel=Kat;"; 
-    private String expectedCSV = "https://www.youtube.com/watch?v=oGURDYckNEI&ab_channel=Kat;true;http://localhost:8080/ec64f62e;"; 
-    private int recibidas=0;
-    private int total=1;
-  
     @Before
-    public void setUp() throws Exception {
-		this.brokerChannelInterceptor = new TestChannelInterceptor();
-		this.clientOutboundChannelInterceptor = new TestChannelInterceptor();
-
-		this.brokerChannel.addInterceptor(this.brokerChannelInterceptor);
-		this.clientOutboundChannel.addInterceptor(this.clientOutboundChannelInterceptor);
+    public void setUp() {
+		brokerChannelInterceptor = new TestChannelInterceptor();
+		brokerChannel.addInterceptor(this.brokerChannelInterceptor);
     }
-  
 
     @Test
-    @Ignore
-    public void checkCreateShortenedCSV() throws Exception {
+    public void currentBehaviour() throws Exception {
+		test(
+			"https://www.youtube.com/watch?v=oGURDYckNEI&ab_channel=Kat;\n",
+			"https://www.youtube.com/watch?v=oGURDYckNEI&ab_channel=Kat;;true;http://localhost:8080/3ae419f7;\n"
+		);
+	}
 
-        //Enviamos una solicitud de SUBSCRIBE
-        StompHeaderAccessor headers = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
-		headers.setSubscriptionId("0");
-		headers.setDestination("/topic/messages");
-		headers.setSessionId("0");
-		headers.setSessionAttributes(new HashMap<>());
-		Message<byte[]> message = MessageBuilder.createMessage(new byte[0], headers.getMessageHeaders());
+	@Test
+	public void whithoutTheLastSemicolonTheHashChanges() throws Exception {
+		test(
+			"https://www.youtube.com/watch?v=oGURDYckNEI&ab_channel=Kat\n",
+			"https://www.youtube.com/watch?v=oGURDYckNEI&ab_channel=Kat;true;http://localhost:8080/ec64f62e;\n"
+		);
+	}
 
-		this.clientOutboundChannelInterceptor.setIncludedDestinations("/topic/messages");
-        this.clientInboundChannel.send(message);
-        
-        MessageInternal mensaje = new MessageInternal(contenidoCSV,"http://localhost:8080/");
-        //Enviamos la URL a acortar
-        StompHeaderAccessor headers2 = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
-		headers2.setSubscriptionId("0");
-		headers2.setDestination("/app/chat");
-		headers2.setSessionId("0");
-		headers2.setSessionAttributes(new HashMap<>());
-		Message<MessageInternal> message2 = MessageBuilder.createMessage(mensaje, headers.getMessageHeaders());
+	@Test
+	public void whyThisFails() throws Exception {	//Used to fail, now both client and server make sure to add 1 line separator at the end of the file for correct line count
+		test(
+			"https://www.youtube.com/watch?v=oGURDYckNEI&ab_channel=Kat",
+			"https://www.youtube.com/watch?v=oGURDYckNEI&ab_channel=Kat;true;http://localhost:8080/ec64f62e;\n"
+		);
+	}
 
-		this.clientOutboundChannelInterceptor.setIncludedDestinations("/app/chat");
-		this.clientInboundChannel.send(message2);
-        
-        //Esperamos a recibir una respuesta
-        Message<?> positionUpdate = this.brokerChannelInterceptor.awaitMessage(25);
+	public void test(String send, String expected) throws IOException, InterruptedException {
+		//Enviamos una solicitud de SUBSCRIBE a /user/topic/messages
+		StompHeaderAccessor subscribeHeaders = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
+		subscribeHeaders.setDestination("/user/topic/messages");
+		subscribeHeaders.setSessionId("");
+		Message<byte[]> subscribeMessage = MessageBuilder.createMessage(new byte[0], subscribeHeaders.getMessageHeaders());
+		clientInboundChannel.send(subscribeMessage);
+
+		// A partir de ahora esperamos mensajes enviados a /user/topic/messages
+		brokerChannelInterceptor.setIncludedDestinations("/user/topic/messages");
+
+		// Enviamos la URL a acortar via SEND /app/chat
+		MessageInternal sendPayload = new MessageInternal(send,"http://localhost:8080/");
+		StompHeaderAccessor sendHeaders = StompHeaderAccessor.create(StompCommand.SEND);
+		sendHeaders.setDestination("/app/chat");
+		sendHeaders.setSessionId("");
+		sendHeaders.setSessionAttributes(Collections.emptyMap());
+		Message<MessageInternal> sendMessage = MessageBuilder.createMessage(sendPayload, sendHeaders.getMessageHeaders());
+		clientInboundChannel.send(sendMessage);
+
+		// Esperamos a recibir una respuesta
+		Message<?> positionUpdate = brokerChannelInterceptor.awaitMessage(5);
 		assertNotNull(positionUpdate);
-        
-        //Comprobamos el contenido del mensaje
-        assertEquals(positionUpdate.getPayload(),expectedCSV);
-	}
-	
-	@Configuration
-	@EnableScheduling
-	@ComponentScan(
-			basePackages="org.springframework.samples",
-			excludeFilters = @ComponentScan.Filter(type= FilterType.ANNOTATION, value = Configuration.class)
-	)
-	@EnableWebSocketMessageBroker
-	static class TestWebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
 
-		@Autowired
-		Environment env;
+		// Nos aseguramos que podemos procesar su contenido
+		assertEquals(MimeType.valueOf("application/json"), positionUpdate.getHeaders().get("contentType"));
+		assertEquals(positionUpdate.getPayload().getClass(), byte[].class);
+		MessageInternal receivedMessage = new ObjectMapper().readValue((byte[]) positionUpdate.getPayload(), MessageInternal.class);
 
-		@Override
-		public void registerStompEndpoints(StompEndpointRegistry registry) {
-			registry.addEndpoint("/chat").withSockJS();
-		}
-
-		@Override
-		public void configureMessageBroker(MessageBrokerRegistry registry) {
-			registry.enableStompBrokerRelay("/topic/");
-			registry.setApplicationDestinationPrefixes("/app");
-		}
-	}
-
-	/**
-	 * Configuration class that un-registers MessageHandler's it finds in the
-	 * ApplicationContext from the message channels they are subscribed to...
-	 * except the message handler used to invoke annotated message handling methods.
-	 * The intent is to reduce additional processing and additional messages not
-	 * related to the test.
-	 */
-	@Configuration
-	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-	static class TestConfig implements ApplicationListener<ContextRefreshedEvent> {
-
-		@Autowired
-		private List<SubscribableChannel> channels;
-
-		@Autowired
-		private List<MessageHandler> handlers;
-
-
-		@Override
-		public void onApplicationEvent(ContextRefreshedEvent event) {
-			for (MessageHandler handler : handlers) {
-				if (handler instanceof SimpAnnotationMethodMessageHandler) {
-					continue;
-				}
-				for (SubscribableChannel channel :channels) {
-					channel.unsubscribe(handler);
-				}
-			}
-		}
+		assertEquals(expected, receivedMessage.getAnswer());
 	}
 }
