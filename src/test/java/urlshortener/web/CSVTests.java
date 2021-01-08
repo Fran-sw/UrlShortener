@@ -46,6 +46,11 @@ public class CSVTests {
 
     @Test
     public void currentBehaviour() throws Exception {
+		StompHeaderAccessor subscribeHeaders = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
+		subscribeHeaders.setDestination("/user/topic/messages");
+		subscribeHeaders.setSessionId("");
+		Message<byte[]> subscribeMessage = MessageBuilder.createMessage(new byte[0], subscribeHeaders.getMessageHeaders());
+		clientInboundChannel.send(subscribeMessage);
 		test(
 			"https://www.youtube.com/watch?v=oGURDYckNEI&ab_channel=Kat;\n",
 			"https://www.youtube.com/watch?v=oGURDYckNEI&ab_channel=Kat;;true;http://localhost:8080/3ae419f7;\n"
@@ -70,11 +75,12 @@ public class CSVTests {
 
 	public void test(String send, String expected) throws IOException, InterruptedException {
 		//Enviamos una solicitud de SUBSCRIBE a /user/topic/messages
+		/*
 		StompHeaderAccessor subscribeHeaders = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
 		subscribeHeaders.setDestination("/user/topic/messages");
 		subscribeHeaders.setSessionId("");
 		Message<byte[]> subscribeMessage = MessageBuilder.createMessage(new byte[0], subscribeHeaders.getMessageHeaders());
-		clientInboundChannel.send(subscribeMessage);
+		clientInboundChannel.send(subscribeMessage);*/
 
 		// A partir de ahora esperamos mensajes enviados a /user/topic/messages
 		brokerChannelInterceptor.setIncludedDestinations("/user/topic/messages");
