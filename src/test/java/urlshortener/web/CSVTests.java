@@ -43,8 +43,7 @@ public class CSVTests {
 		brokerChannelInterceptor = new TestChannelInterceptor();
 		brokerChannel.addInterceptor(this.brokerChannelInterceptor);
     }
-/*
-	@Ignore
+
     @Test
     public void currentBehaviour() throws Exception {
 		test(
@@ -53,7 +52,6 @@ public class CSVTests {
 		);
 	}
 
-	//@Ignore
 	@Test
 	public void whithoutTheLastSemicolonTheHashChanges() throws Exception {
 		test(
@@ -62,7 +60,6 @@ public class CSVTests {
 		);
 	}
 
-	@Ignore
 	@Test
 	public void whyThisFails() throws Exception {	//Used to fail, now both client and server make sure to add 1 line separator at the end of the file for correct line count
 		test(
@@ -101,7 +98,7 @@ public class CSVTests {
 		MessageInternal receivedMessage = new ObjectMapper().readValue((byte[]) positionUpdate.getPayload(), MessageInternal.class);
 
 		assertEquals(expected, receivedMessage.getAnswer());
-	}*/
+	}/*
 
 	@Test
 	public void globalTestForTravis() throws Exception {	//Used to fail, now both client and server make sure to add 1 line separator at the end of the file for correct line count
@@ -165,6 +162,6 @@ public class CSVTests {
 		receivedMessage = new ObjectMapper().readValue((byte[]) positionUpdate.getPayload(), MessageInternal.class);
 
 		assertEquals("https://www.youtube.com/watch?v=oGURDYckNEI&ab_channel=Kat;true;http://localhost:8080/ec64f62e;\n", receivedMessage.getAnswer());
-	}
+	}*/
 
 }
