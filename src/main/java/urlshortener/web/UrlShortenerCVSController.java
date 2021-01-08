@@ -103,7 +103,7 @@ public class UrlShortenerCVSController {
     //contenido.replaceAll("\n", "");
     if (contenido.length()>0) {
       String[] lines = contenido.split("\n", -1); 
-      int count = lines.length-1;
+      int count = lines.length;
       int posicion = 0;
       MessageInternal resultado;
       while (posicion<count) {
